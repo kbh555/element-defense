@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>운빨원소존많겜 - 하드코어 칼날부리 에디션</title>
+    <style>
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background-color: #1a1c23;
+            color: #e1e4e6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h1 { color: #f1c40f; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        p { color: #95a5a6; margin-top: 0; margin-bottom: 20px; text-align: center; }
+
+        /* 대시보드 */
+        .dashboard {
+            background: #2c3e50;
+            max-width: 950px;
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            border: 1px solid #34495e;
+        }
+        .stat-box { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .coin-txt { color: #f39c12; font-size: 22px; text-shadow: 0 0 8px rgba(243,156,18,0.5); }
+        .ticket-txt { color: #2ecc71; font-size: 18px; }
+        .mob-txt { color: #e74c3c; font-size: 22px; font-weight: 900; transition: all 0.2s; }
+        .level-txt { color: #e67e22; font-size: 20px; text-shadow: 0 0 5px rgba(230,126,34,0.5); }
+        .score-txt { color: #3498db; font-size: 22px; text-shadow: 0 0 8px rgba(52,152,219,0.5); }
+
+        #boss-alert {
+            display: none;
+            background: linear-gradient(90deg, #7f1d1d, #d35400, #7f1d1d);
+            color: white;
+            width: 100%;
+            max-width: 950px;
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            animation: blink 0.8s infinite;
+            box-sizing: border-box;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        .tab-menu {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            max-width: 950px;
+            width: 100%;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            font-size: 15px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: #34495e;
+            color: #bdc3c7;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            background-color: #f1c40f;
+            color: #1a1c23;
+            box-shadow: 0 4px 10px rgba(241,196,15,0.3);
+        }
+
+        .main-layout {
+            display: flex;
+            max-width: 950px;
+            width: 100%;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+
+        .left-panel {
+            flex: 1.25;
+            min-height: 460px;
+            background: #242730;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            border: 1px solid #2c3e50;
+            box-sizing: border-box;
+        }
+
+        .right-panel {
+            flex: 0.75;
+            background: #242730;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            border: 1px solid #2c3e50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+        }
+        #defense-canvas {
+            background-color: #15171c;
+            border: 2px solid #34495e;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .game-panel { display: none; animation: fadeIn 0.3s ease; }
+        .game-panel.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* 퀴즈 UI */
+        .quiz-header { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px solid #34495e; font-size: 13px;}
+        .quiz-q { font-size: 15px; font-weight: bold; color: #fff; margin-bottom: 15px; min-height: 55px; line-height: 1.5; color: #f1c40f;}
+        .quiz-options { display: grid; grid-template-columns: 1fr; gap: 9px; }
+        .quiz-btn {
+            background: #2c3e50; color: #fff; border: 1px solid #34495e; padding: 12px; border-radius: 8px;
+            font-size: 14px; font-weight: bold; cursor: pointer; text-align: left; transition: all 0.2s;
+        }
+        .quiz-btn:hover { background: #34495e; border-color: #f1c40f; }
+
+        .gacha-zone { display: flex; flex-direction: column; gap: 15px; align-items: center; }
+        .gacha-ctrls { display: flex; gap: 10px; width: 100%; flex-wrap: wrap; justify-content: center; }
+        .gacha-btn { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; padding: 12px 20px; font-size: 14px; font-weight: bold; border-radius: 20px; cursor: pointer; }
+        .ticket-btn { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; border: none; padding: 12px 20px; font-size: 14px; font-weight: bold; border-radius: 20px; cursor: pointer; }
+        .upg-btn { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; border: none; padding: 12px 15px; font-size: 13px; font-weight: bold; border-radius: 20px; cursor: pointer; }
+        .combine-btn { background: #f39c12; color: #1a1c23; border: none; padding: 12px 20px; font-size: 14px; font-weight: bold; border-radius: 20px; cursor: pointer; }
+        .gacha-btn:disabled, .ticket-btn:disabled, .upg-btn:disabled { background: #7f8c8d !important; cursor: not-allowed; }
+        .chance-info { font-size: 11px; color: #bdc3c7; background: #1a1c23; padding: 8px; border-radius: 6px; width: 100%; text-align: center; }
+
+        .periodic-table { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+        .element-cell {
+            border: 1px dashed #5d6d7e; border-radius: 4px; height: 50px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background-color: #2c3e50; color: #5d6d7e; font-weight: bold; font-size: 10px; opacity: 0.3;
+        }
+        .element-cell.acquired { border-style: solid; color: white !important; opacity: 1 !important; }
+        .element-cell.acquired.C { background-color: #7f8c8d; }
+        .element-cell.acquired.B { background-color: #2980b9; }
+        .element-cell.acquired.A { background-color: #27ae60; }
+        .element-cell.acquired.SR { background-color: #8e44ad; }
+        .element-cell.acquired.SSR { background-color: #d35400; border-color: #f1c40f; }
+        .empty-cell { grid-column: span 6; }
+    </style>
+</head>
+<body>
+
+    <h1>🧪 운빨원소존많겜: 클래스 랭킹 챔피언십</h1>
+    <p>🦅 0코인 시작! 칼날부리 무리의 공세가 더욱 거세졌습니다. 퀴즈를 빠르게 맞히세요!</p>
+
+    <div id="boss-alert">⚠️ WARNING: 분노한 붉은 깃털의 '거대 붉은 칼날부리' 보스가 출현했습니다! ⚠️</div>
+
+    <div class="dashboard">
+        <div class="stat-box"><span>🏆 내 스코어</span><span id="score-count" class="score-txt">0</span></div>
+        <div class="stat-box"><span>현재 몹 레벨</span><span id="monster-level" class="level-txt">1</span>Lv🔥</div>
+        <div class="stat-box"><span>진행도 (중복없음)</span><span id="quiz-progress" style="color:#3498db; font-size:18px;">0 / 80</span>📝</div>
+        <div class="stat-box"><span>라인 몹 수</span><span id="mob-count" class="mob-txt">0</span> / 20☠️</div>
+        <div class="stat-box"><span>보유 자원</span><div>🪙<span id="coin-count" style="color:#f39c12; font-size:16px; margin-right:5px;">0</span> 🎫<span id="ticket-count" style="color:#2ecc71; font-size:16px;">0</span></div></div>
+    </div>
+
+    <div class="tab-menu">
+        <button class="tab-btn active" id="btn-quiz" onclick="switchTab('quiz')">📝 1단계: 마스터 퀴즈 (자원 수급)</button>
+        <button class="tab-btn" id="btn-gacha" onclick="switchTab('gacha')">🎁 2단계: 소환 및 초고속 합성</button>
+        <button class="tab-btn" id="btn-table" onclick="switchTab('table')">📊 3단계: 주기율표 영구강화</button>
+    </div>
+
+    <div class="main-layout">
+        <div class="left-panel">
+            <!-- 퀴즈 탭 -->
+            <div class="game-panel active" id="panel-quiz">
+                <div class="quiz-header">
+                    <div>
+                        <span id="quiz-category" style="background:#34495e; color:#fff; padding:3px 6px; border-radius:4px; font-weight:bold; margin-right:5px;">카테고리</span>
+                    </div>
+                    <span>맞추면: <span style="color:#f1c40f;">2코인 + 100점</span> / 틀려도 다음 문제로 전진!</span>
+                </div>
+                <div class="quiz-q" id="quiz-question">문제를 불러오는 중...</div>
+                <div class="quiz-options">
+                    <button class="quiz-btn" onclick="checkAnswer(1)">① <span id="opt1"></span></button>
+                    <button class="quiz-btn" onclick="checkAnswer(2)">② <span id="opt2"></span></button>
+                    <button class="quiz-btn" onclick="checkAnswer(3)">③ <span id="opt3"></span></button>
+                    <button class="quiz-btn" onclick="checkAnswer(4)">④ <span id="opt4"></span></button>
+                </div>
+            </div>
+
+            <!-- 소환 탭 -->
+            <div class="game-panel" id="panel-gacha">
+                <div class="gacha-zone">
+                    <div class="gacha-ctrls">
+                        <button class="gacha-btn" onclick="drawGacha('coin')">코인 소환 (4코인)</button>
+                        <button class="ticket-btn" id="btn-ticket-draw" onclick="drawGacha('ticket')">소환권 소환 (1장)</button>
+                        <button class="upg-btn" id="btn-upgrade" onclick="upgradeGacha()">확률 업 (<span id="upg-cost">8</span>코인)</button>
+                        <button class="combine-btn" onclick="combineFieldTowers()">초고속 상위 융합 (3개 합성)</button>
+                    </div>
+                    <div class="chance-info" id="chance-display">확률 로딩 중...</div>
+                </div>
+            </div>
+
+            <!-- 도감 탭 -->
+            <div class="game-panel" id="panel-table">
+                <h4 style="margin:0 0 10px 0; color:#f1c40f; text-align:center;">획득 원소 주기율표 (필드 타워 클릭 시 영구 데미지 +50% 축적)</h4>
+                <div class="periodic-table" id="periodic-table"></div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div style="font-size:13px; font-weight:bold; margin-bottom:8px; color:#f1c40f;">⚔️ 디펜스 라인 (4x4 필드)</div>
+            <canvas id="defense-canvas" width="360" height="360"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const rawElements = [
+            { no: 1, symbol: "H", name: "수소", grade: "A", color: "#2ecc71" },
+            { no: 2, symbol: "He", name: "헬륨", grade: "SSR", color: "#f1c40f" },
+            { no: 3, symbol: "Li", name: "리튬", grade: "SR", color: "#9b59b6" },
+            { no: 4, symbol: "Be", name: "베릴륨", grade: "SSR", color: "#f1c40f" },
+            { no: 5, symbol: "B", name: "붕소", grade: "SR", color: "#9b59b6" },
+            { no: 6, symbol: "C", name: "탄소", grade: "A", color: "#7f8c8d" },
+            { no: 7, symbol: "N", name: "질소", grade: "SR", color: "#9b59b6" },
+            { no: 8, symbol: "O", name: "산소", grade: "C", color: "#bdc3c7" },
+            { no: 9, symbol: "F", name: "플루오린", grade: "SR", color: "#9b59b6" },
+            { no: 10, symbol: "Ne", name: "네온", grade: "SSR", color: "#f1c40f" },
+            { no: 11, symbol: "Na", name: "나트륨", grade: "B", color: "#3498db" },
+            { no: 12, symbol: "Mg", name: "마그네슘", grade: "B", color: "#3498db" },
+            { no: 13, symbol: "Al", name: "알루미늄", grade: "B", color: "#3498db" },
+            { no: 14, symbol: "Si", name: "규소", grade: "C", color: "#bdc3c7" },
+            { no: 15, symbol: "P", name: "인", grade: "A", color: "#2ecc71" },
+            { no: 16, symbol: "S", name: "황", grade: "A", color: "#2ecc71" },
+            { no: 17, symbol: "Cl", name: "염소", grade: "SR", color: "#9b59b6" },
+            { no: 18, symbol: "Ar", name: "아르곤", grade: "SSR", color: "#f1c40f" },
+            { no: 19, symbol: "K", name: "칼륨", grade: "B", color: "#3498db" },
+            { no: 20, symbol: "Ca", name: "칼슘", grade: "B", color: "#3498db" }
+        ];
+
+        const elementsData = {};
+        rawElements.forEach(el => elementsData[el.no] = el);
+
+        const masterQuizBank = [
+            { cat: "원자 번호", q: "수소(H)의 원자 번호는 몇 번일까요?", os: ["1번", "2번", "3번", "4번"], a: 1 },
+            { cat: "원자 번호", q: "광조명 및 풍선 충전에 쓰이는 비활성 기체, 헬륨(He)의 원자 번호는?", os: ["1번", "2번", "5번", "10번"], a: 2 },
+            { cat: "원자 번호", q: "이차전지 배터리의 핵심 원료인 알칼리 금속, 리튬(Li)의 원자 번호는?", os: ["3번", "4번", "11번", "19번"], a: 1 },
+            { cat: "원자 번호", q: "에메랄드의 성분이자 X선 투과창에 쓰이는 베릴륨(Be)의 원자 번호는?", os: ["2번", "3번", "4번", "12번"], a: 3 },
+            { cat: "원자 번호", q: "바퀴벌레 퇴치용 붕산수의 원료가 되는 붕소(B)의 원자 번호는?", os: ["5번", "6번", "13번", "15번"], a: 1 },
+            { cat: "원자 번호", q: "유기 생명체와 연필심, 다이아몬드의 기초가 되는 탄소(C)의 원자 번호는?", os: ["4번", "6번", "8번", "14번"], a: 2 },
+            { cat: "원자 번호", q: "지구 대기 성분의 무려 78%를 차지하고 있는 기체 원소인 질소(N)의 원자 번호는?", os: ["7번", "8번", "15번", "16번"], a: 1 },
+            { cat: "원자 번호", q: "지구 생물이 호흡할 때와 연소 반응에 무조건 필요한 산소(O)의 원자 번호는?", os: ["6번", "7번", "8번", "16번"], a: 3 },
+            { cat: "원자 번호", q: "충치 예방 치약의 주성분인 강한 반응성의 할로젠, 플루오린(F)의 원자 번호는?", os: ["9번", "17번", "11번", "19번"], a: 1 },
+            { cat: "원자 번호", q: "화려한 붉은빛의 야간 네온사인을 만드는 비활성 기체, 네온(Ne)의 원자 번호는?", os: ["2번", "10번", "18번", "20번"], a: 2 },
+            { cat: "원자 번호", q: "소금의 주성분이자 물과 닿으면 격렬히 반응하는 나트륨(Na)의 원자 번호는?", os: ["3번", "11번", "12번", "19번"], a: 2 },
+            { cat: "원자 번호", q: "엽록소의 중심 원소이며 부족 시 눈 떨림을 주는 마그네슘(Mg)의 원자 번호는?", os: ["11번", "12번", "13번", "20번"], a: 2 },
+            { cat: "원자 번호", q: "주방 호일 및 캔음료 용기로 흔히 쓰이는 가벼운 금속, 알루미늄(Al)의 원자 번호는?", os: ["12번", "13번", "14번", "15번"], a: 2 },
+            { cat: "원자 번호", q: "컴퓨터 반도체 웨이퍼 칩 및 유리의 핵심 원료인 규소(Si)의 원자 번호는?", os: ["6번", "14번", "15번", "16번"], a: 2 },
+            { cat: "원자 번호", q: "성냥 마찰면과 화학 비료, DNA 뼈대를 채우는 인(P)의 원자 번호는?", os: ["7번", "15번", "16번", "17번"], a: 2 },
+            { cat: "원자 번호", q: "화약의 원료이자 온천 특유의 계란 삶은 냄새를 유발하는 황(S)의 원자 번호는?", os: ["8번", "14번", "16번", "17번"], a: 3 },
+            { cat: "원자 번호", q: "수영장 물 소독과 가정용 락스의 주요 원료 기체인 염소(Cl)의 원자 번호는?", os: ["9번", "17번", "18번", "19번"], a: 2 },
+            { cat: "원자 번호", q: "백열전구 필라멘트 산화 방지 충전재로 쓰이는 아르곤(Ar)의 원자 번호는?", os: ["10번", "17번", "18번", "20번"], a: 3 },
+            { cat: "원자 번호", q: "바바나에 많아 체내 혈압 조절을 돕는 알칼리 금속인 칼륨(K)의 원자 번호는?", os: ["11번", "19번", "20번", "12번"], a: 2 },
+            { cat: "원자 번호", q: "뼈와 치아를 튼튼하게 해주며 우유에 가득 담긴 칼슘(Ca)의 원자 번호는?", os: ["12번", "19번", "20번", "11번"], a: 3 },
+            { cat: "원소 기호", q: "원자 번호 1번 원소인 '수소'의 올바른 원소 기호는?", os: ["H", "He", "Li", "Be"], a: 1 },
+            { cat: "원소 기호", q: "원자 번호 2번 원소인 '헬륨'의 올바른 원소 기호는?", os: ["H", "He", "B", "Ne"], a: 2 },
+            { cat: "원소 기호", q: "원자 번호 3번 원소인 '리튬'의 올바른 원소 기호는?", os: ["L", "Li", "La", "Na"], a: 2 },
+            { cat: "원소 기호", q: "원자 번호 4번 원소인 '베릴륨'의 올바른 원소 기호는?", os: ["B", "Be", "Ba", "Bi"], a: 2 },
+            { cat: "원소 기호", q: "원자 번호 5번 원소인 '붕소'의 올바른 원소 기호는?", os: ["B", "Be", "Bo", "Br"], a: 1 },
+            { cat: "원소 기호", q: "원자 번호 6번 원소인 '탄소'의 올바른 원소 기호는?", os: ["Ca", "Cl", "C", "Co"], a: 3 },
+            { cat: "원소 기호", q: "원자 번호 7번 원소인 '질소'의 올바른 원소 기호는?", os: ["Ni", "Na", "N", "O"], a: 3 },
+            { cat: "원소 기호", q: "원자 번호 8번 원소인 '산소'의 올바른 원소 기호는?", os: ["Os", "O", "Oh", "H"], a: 2 },
+            { cat: "원소 기호", q: "원자 번호 9번 원소인 '플루오린'의 올바른 원소 기호는?", os: ["Fl", "F", "Fi", "Cl"], a: 2 },
+            { cat: "원소 기호", q: "원자 번호 10번 원소인 '네온'의 올바른 원소 기호는?", os: ["N", "Ne", "No", "Ar"], a: 2 },
+            { cat: "원소 기호", q: "원자 번호 11번 원소인 '나트륨'의 올바른 원소 기호는?", os: ["N", "Na", "Nt", "K"], a: 2 },
+            { cat: "원소 기호", q: "원자 번호 12번 원소인 '마그네슘'의 올바른 원소 기호는?", os: ["Mn", "Mg", "Ma", "Ca"], a: 2 },
+            { cat: "원소 기호", q: "원자 번호 13번 원소인 '알루미늄'의 올바른 원소 기호는?", os: ["Am", "Au", "Al", "Ag"], a: 3 },
+            { cat: "원소 기호", q: "원자 번호 14번 원소인 '규소'의 올바른 원소 기호는?", os: ["S", "Si", "Sc", "Sl"], a: 2 },
+            { cat: "원소 기호", q: "원자 번호 15번 원소인 '인'의 올바른 원소 기호는?", os: ["I", "In", "P", "K"], a: 3 },
+            { cat: "원소 기호", q: "원자 번호 16번 원소인 '황'의 올바른 원소 기호는?", os: ["Su", "Hw", "S", "Si"], a: 3 },
+            { cat: "원소 기호", q: "원자 번호 17번 원소인 '염소'의 올바른 원소 기호는?", os: ["C", "Ch", "Cl", "F"], a: 3 },
+            { cat: "원소 기호", q: "원자 번호 18번 원소인 '아르곤'의 올바른 원소 기호는?", os: ["Ag", "Ar", "An", "He"], a: 2 },
+            { cat: "원소 기호", q: "원자 번호 19번 원소인 '칼륨'의 올바른 원소 기호는?", os: ["K", "Ka", "Ca", "Na"], a: 1 },
+            { cat: "원소 기호", q: "원자 번호 20번 원소인 '칼슘'의 올바른 원소 기호는?", os: ["C", "K", "Ca", "Cs"], a: 3 },
+            { cat: "한글 이름", q: "원소 기호 'H'를 쓰는 원자 번호 1번 원소의 정확한 이름은?", os: ["수소", "헬륨", "리튬", "질소"], a: 1 },
+            { cat: "한글 이름", q: "원소 기호 'He'를 쓰는 원자 번호 2번 원소의 정확한 이름은?", os: ["수소", "네온", "아르곤", "헬륨"], a: 4 },
+            { cat: "한글 이름", q: "원소 기호 'Li'를 쓰는 원자 번호 3번 원소의 정확한 이름은?", os: ["나트륨", "리튬", "칼륨", "베릴륨"], a: 2 },
+            { cat: "한글 이름", q: "원소 기호 'Be'를 쓰는 원자 번호 4번 원소의 정확한 이름은?", os: ["붕소", "바륨", "베릴륨", "비스무트"], a: 3 },
+            { cat: "한글 이름", q: "원소 기호 'B'를 쓰는 원자 번호 5번 원소의 정확한 이름은?", os: ["붕소", "탄소", "베릴륨", "브로민"], a: 1 },
+            { cat: "한글 이름", q: "원소 기호 'C'를 쓰는 원자 번호 6번 원소의 정확한 이름은?", os: ["칼슘", "규소", "탄소", "구리"], a: 3 },
+            { cat: "한글 이름", q: "원소 기호 'N'를 쓰는 원자 번호 7번 원소의 정확한 이름은?", os: ["나트륨", "네온", "질소", "니켈"], a: 3 },
+            { cat: "한글 이름", q: "원소 기호 'O'를 쓰는 원자 번호 8번 원소의 정확한 이름은?", os: ["수소", "오스뮴", "산소", "황"], a: 3 },
+            { cat: "한글 이름", q: "원소 기호 'F'를 쓰는 원자 번호 9번 원소의 정확한 이름은?", os: ["염소", "플루오린(불소)", "철", "인"], a: 2 },
+            { cat: "한글 이름", q: "원소 기호 'Ne'를 쓰는 원자 번호 10번 원소의 정확한 이름은?", os: ["네온", "헬륨", "아르곤", "질소"], a: 1 },
+            { cat: "한글 이름", q: "원소 기호 'Na'를 쓰는 원자 번호 11번 원소의 정확한 이름은?", os: ["나트륨", "칼륨", "리튬", "마그네슘"], a: 1 },
+            { cat: "한글 이름", q: "원소 기호 'Mg'를 쓰는 원자 번호 12번 원소의 정확한 이름은?", os: ["망가니즈", "마그네슘", "칼슘", "알루미늄"], a: 2 },
+            { cat: "한글 이름", q: "원소 기호 'Al'를 쓰는 원자 번호 13번 원소의 정확한 이름은?", os: ["은", "철", "아연", "알루미늄"], a: 4 },
+            { cat: "한글 이름", q: "원소 기호 'Si'를 쓰는 원자 번호 14번 원소의 정확한 이름은?", os: ["황", "인", "규소(실리콘)", "탄소"], a: 3 },
+            { cat: "한글 이름", q: "원소 기호 'P'를 쓰는 원자 번호 15번 원소의 정확한 이름은?", os: ["인", "칼륨", "백금", "납"], a: 1 },
+            { cat: "한글 이름", q: "원소 기호 'S'를 쓰는 원자 번호 16번 원소의 정확한 이름은?", os: ["황", "규소", "나트륨", "주석"], a: 1 },
+            { cat: "원소 이름", q: "원소 기호 'Cl'를 쓰는 원자 번호 17번 원소의 정확한 이름은?", os: ["탄소", "플루오린", "염소", "칼슘"], a: 3 },
+            { cat: "원소 이름", q: "원소 기호 'Ar'를 쓰는 원자 번호 18번 원소의 정확한 이름은?", os: ["아르곤", "네온", "헬륨", "은"], a: 1 },
+            { cat: "원소 이름", q: "원소 기호 'K'를 쓰는 원자 번호 19번 원소의 정확한 이름은?", os: ["칼슘", "칼륨(포타슘)", "크롬", "구리"], a: 2 },
+            { cat: "원소 이름", q: "원소 기호 'Ca'를 쓰는 원자 번호 20번 원소의 정확한 이름은?", os: ["칼륨", "탄소", "카드뮴", "칼슘"], a: 4 },
+            { cat: "실생활 상식", q: "미래 친환경 자동차와 우주선 로켓의 '청정 액체 연료'로 핵심 가치를 인정받는 가벼운 원소는?", os: ["H (수소)", "He (헬륨)", "Li (리튬)", "O (산소)"], a: 1 },
+            { cat: "실생활 상식", q: "들이마시면 목소리가 얇게 변하고, 폭발 위험이 없어 축제용 풍선 기구에 충전하는 안전한 기체는?", os: ["수소", "헬륨", "네온", "아르곤"], a: 2 },
+            { cat: "실생활 상식", q: "스마트폰, 무선 이어폰, 노트북, 전기차 배터리의 중심이 되는 '리튬 이차전지'의 베이스 원소는?", os: ["Li (리튬)", "Na (나트륨)", "Mg (마그네슘)", "Al (알루미늄)"], a: 1 },
+            { cat: "실생활 상식", q: "초록빛 보석 에메랄드의 구성 원소이자 항공우주 분야 합금, X선관의 투과창 투과재로 쓰이는 금속은?", os: ["베릴륨", "붕소", "알루미늄", "칼슘"], a: 1 },
+            { cat: "실생활 상식", q: "유리 가공 공정이나 식물의 생장 필수 미량 영양소, 혹은 바퀴벌레 퇴치용 약에 함유되는 비금속 원소는?", os: ["붕소 (B)", "탄소 (C)", "규소 (Si)", "인 (P)"], a: 1 },
+            { cat: "실생활 상식", q: "연필심(흑연), 인공 다이아몬드, 숯의 몸체이자, 지구상 모든 생명체 유기물의 근본 뼈대가 되는 원소는?", os: ["산소", "질소", "탄소 (C)", "규소"], a: 3 },
+            { cat: "실생활 상식", q: "봉지 과자가 부서지지 않고 바삭함을 유지하게끔 과자 봉지 안에 가득 주입하는 무독성 냉각 기체는?", os: ["질소 (N)", "산소 (O)", "네온 (Ne)", "헬륨"], a: 1 },
+            { cat: "실생활 상식", q: "병원 응급실의 산소호흡기, 깊은 바다 잠수부의 공기통, 물건이 불타오르는 연소 작용에 필수적인 원소는?", os: ["수소", "질소", "아르곤", "산소 (O)"], a: 4 },
+            { cat: "실생활 상식", q: "어린이 충치 방지용 코팅제 치약이나 프라이팬 음식이 달라붙지 않게 코팅하는 '테플론'의 성분 원소는?", os: ["플루오린 (F)", "염소 (Cl)", "황 (S)", "나트륨"], a: 1 },
+            { cat: "실생활 상식", q: "상가 밤거리를 붉고 화려하게 연출하는 간판 조명 사인(Sign) 방전관에 주입하는 비활성 기체는?", os: ["헬륨", "아르곤", "네온 (Ne)", "크립톤"], a: 3 },
+            { cat: "실생활 상식", q: "주방 소금(NaCl) 성분의 절반이자, 어두운 터널이나 길거리를 노랗게 밝히는 가로등의 증기 원료 금속은?", os: ["나트륨 (Na)", "칼륨 (K)", "마그네슘 (Mg)", "리튬 (Li)"], a: 1 },
+            { cat: "실생활 상식", q: "스마트 가전의 초경량 단단한 마그네슘 합금 틀에 쓰이며, 부족하면 눈밑이 파르르 떨리게 되는 전해질 영양소는?", os: ["철", "칼슘", "마그네슘 (Mg)", "알루미늄"], a: 3 },
+            { cat: "실생활 상식", q: "알루미늄 호일, 시원한 캔 음료 용기를 제조할 때 쓰는 가벼운 은백색 금속은?", os: ["알루미늄 (Al)", "규소 (Si)", "철 (Fe)", "구리 (Cu)"], a: 1 },
+            { cat: "실생활 상식", q: "반도체 웨이퍼의 심장이자 모래나 유리의 주성분이기도 한 원소는?", os: ["탄소", "알루미늄", "규소 (Si)", "게르마늄"], a: 3 },
+            { cat: "실생활 상식", q: "레트로 성냥갑 측면의 거친 마찰 성분, 농업용 3대 화학 비료(NPK), 생물 유전자 DNA 사슬의 뼈대 원소는?", os: ["인 (P)", "황 (S)", "질소 (N)", "염소 (Cl)"], a: 1 },
+            { cat: "실생활 상식", q: "화약이나 성냥의 연소제 성분이며 온천수에서 특유의 냄새를 유발하는 노란색 비금속 원소는?", os: ["황 (S)", "인 (P)", "탄소 (C)", "규소"], a: 1 },
+            { cat: "실생활 상식", q: "수영장 물의 강력한 살균 소독제, 위생적인 수돗물 정화, 락스 세제의 핵심 기체는?", os: ["플루오린", "염소 (Cl)", "아르곤", "나트륨"], a: 2 },
+            { cat: "실생활 상식", q: "백열전구의 내부에 충전하는, 대기 중에 세 번째로 많은 비활성 기체는?", os: ["아르곤 (Ar)", "네온 (Ne)", "헬륨 (He)", "질소 (N)"], a: 1 },
+            { cat: "실생활 상식", q: "바나나에 가득하며 체내 전해질을 유지하고 나트륨 배출을 유도해 혈압을 낮춰주는 알칼리 금속 원소는?", os: ["칼륨 (K)", "칼슘 (Ca)", "마그네슘 (Mg)", "나트륨 (Na)"], a: 1 },
+            { cat: "실생활 상식", q: "사람의 뼈와 치아를 형성하는 주원료이며 골다공증 예방에 없어서는 안 될 원소는?", os: ["칼슘 (Ca)", "칼륨 (K)", "철 (Fe)", "리튬 (Li)"], a: 1 }
+        ];
+
+        // --- 인게임 자원 패치 (초기 자원 0 코인 원상 복구 및 밸런스 조정) ---
+        let gameScore = 0; 
+        let userCoins = 0; // 초반 공짜 기물 차단 ➔ 하드코어 스타트
+        let freeTickets = 0;
+        let gachaLevel = 1;
+        let upgCost = 8;
+        
+        let collectionBuffs = {}; 
+        Object.keys(elementsData).forEach(k => collectionBuffs[k] = 0);
+
+        let activeQuizQueue = [];  
+        let currentProgressIndex = 0; 
+        let currentQuiz = null;
+
+        let fieldTowers = Array(16).fill(0); 
+        let monsters = [];
+        let projectiles = [];
+        let canvas, ctx;
+        
+        let spawnTimer = 0;
+        let monsterLevel = 1; 
+        let levelUpTimer = 0;  
+        let isGameOver = false;
+        let globalAnimFrame = 0; 
+
+        const gridCount = 4;
+        const cellSize = 60;
+        const offsetX = 60;
+        const offsetY = 60;
+
+        const path = [
+            {x: 20, y: 20}, {x: 340, y: 20}, {x: 340, y: 340}, {x: 20, y: 340}, {x: 20, y: 40}
+        ];
+
+        const gradeOrder = ["C", "B", "A", "SR", "SSR"];
+
+        window.onload = function() {
+            canvas = document.getElementById("defense-canvas");
+            ctx = canvas.getContext("2d");
+
+            renderPeriodicTable();
+            initQuizEngine();
+            nextQuiz();
+            updateUI();
+
+            canvas.addEventListener("click", handleCanvasClick);
+            setInterval(updateDefenseFrame, 1000 / 30); 
+        };
+
+        function initQuizEngine() {
+            activeQuizQueue = [...masterQuizBank];
+            shuffleArray(activeQuizQueue);
+            currentProgressIndex = 0;
+        }
+
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                let temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+            }
+        }
+
+        function switchTab(tabName) {
+            ["quiz", "gacha", "table"].forEach(t => {
+                document.getElementById(`panel-${t}`).classList.remove("active");
+                document.getElementById(`btn-${t}`).classList.remove("active");
+            });
+            document.getElementById(`panel-${tabName}`).classList.add("active");
+            document.getElementById(`btn-${tabName}`).classList.add("active");
+        }
+
+        function renderPeriodicTable() {
+            const table = document.getElementById("periodic-table");
+            table.innerHTML = "";
+            table.appendChild(createCell(1)); 
+            let empty = document.createElement("div"); empty.className = "empty-cell"; table.appendChild(empty);
+            table.appendChild(createCell(2)); 
+            for(let i=3; i<=10; i++) table.appendChild(createCell(i));
+            for(let i=11; i<=18; i++) table.appendChild(createCell(i));
+            table.appendChild(createCell(19)); table.appendChild(createCell(20));
+        }
+
+        function createCell(num) {
+            const cell = document.createElement("div");
+            cell.className = `element-cell acquired ${elementsData[num].grade}`;
+            cell.id = `cell-${num}`;
+            cell.innerHTML = `<div>${elementsData[num].symbol}</div><div id="buff-stack-${num}" style="font-size:8px; color:#f1c40f;">+0%</div>`;
+            return cell;
+        }
+
+        function getGachaRates() {
+            let rates = { C: 50, B: 30, A: 14, SR: 5, SSR: 1 };
+            if (gachaLevel === 2) rates = { C: 40, B: 33, A: 18, SR: 7, SSR: 2 };
+            if (gachaLevel === 3) rates = { C: 30, B: 35, A: 22, SR: 10, SSR: 3 };
+            if (gachaLevel === 4) rates = { C: 20, B: 35, A: 27, SR: 13, SSR: 5 };
+            if (gachaLevel >= 5)  rates = { C: 10, B: 30, A: 32, SR: 20, SSR: 8 };
+            return rates;
+        }
+
+        function updateUI() {
+            document.getElementById("score-count").innerText = gameScore;
+            document.getElementById("coin-count").innerText = Math.floor(userCoins);
+            document.getElementById("ticket-count").innerText = freeTickets;
+            
+            const mobLabel = document.getElementById("mob-count");
+            mobLabel.innerText = monsters.length;
+            
+            if(monsters.length >= 15) {
+                mobLabel.style.color = "#ff0000"; mobLabel.style.fontSize = "30px";
+            } else if(monsters.length >= 10) {
+                mobLabel.style.color = "#e67e22"; mobLabel.style.fontSize = "24px";
+            } else {
+                mobLabel.style.color = "#e74c3c"; mobLabel.style.fontSize = "22px";
+            }
+
+            document.getElementById("monster-level").innerText = monsterLevel;
+            document.getElementById("quiz-progress").innerText = `${currentProgressIndex} / ${activeQuizQueue.length}`;
+
+            let hasBossOnField = monsters.some(m => m.isBoss);
+            document.getElementById("boss-alert").style.display = hasBossOnField ? "block" : "none";
+
+            Object.keys(collectionBuffs).forEach(num => {
+                const stack = collectionBuffs[num];
+                const label = document.getElementById(`buff-stack-${num}`);
+                if(label) label.innerText = `+${stack * 50}%`;
+                const cell = document.getElementById(`cell-${num}`);
+                if(stack > 0) cell.style.opacity = "1";
+                else cell.style.opacity = "0.2";
+            });
+
+            const r = getGachaRates();
+            document.getElementById("chance-display").innerText = `소환 확률: [C:${r.C}%] [B:${r.B}%] [A:${r.A}%] [SR:${r.SR}%] [SSR:${r.SSR}%]`;
+            document.getElementById("btn-upgrade").disabled = (gachaLevel >= 5);
+            document.getElementById("btn-ticket-draw").disabled = (freeTickets <= 0);
+        }
+
+        function nextQuiz() {
+            if(currentProgressIndex >= activeQuizQueue.length) {
+                shuffleArray(activeQuizQueue);
+                currentProgressIndex = 0;
+            }
+            currentQuiz = activeQuizQueue[currentProgressIndex];
+
+            document.getElementById("quiz-category").innerText = `분류: ${currentQuiz.cat}`;
+            document.getElementById("quiz-question").innerText = currentQuiz.q;
+            document.getElementById("opt1").innerText = currentQuiz.os[0];
+            document.getElementById("opt2").innerText = currentQuiz.os[1];
+            document.getElementById("opt3").innerText = currentQuiz.os[2];
+            document.getElementById("opt4").innerText = currentQuiz.os[3];
+        }
+
+        function checkAnswer(chosen) {
+            if(isGameOver || !currentQuiz) return;
+
+            if(chosen === currentQuiz.a) {
+                alert("🎯 정답입니다! (+2 코인 / +100점)");
+                userCoins += 2;
+                gameScore += 100;
+            } else {
+                alert(`❌ 오답입니다!\n정답은 ${currentQuiz.a}번: ${currentQuiz.os[currentQuiz.a-1]}`);
+            }
+            
+            currentProgressIndex++; 
+            updateUI();
+            nextQuiz(); 
+        }
+
+        function drawGacha(mode) {
+            if(isGameOver) return;
+            if (mode === 'coin') {
+                if (userCoins < 4) { alert("코인이 부족합니다! 퀴즈를 풀어 자원을 채우세요."); return; }
+                userCoins -= 4;
+            } else {
+                if (freeTickets < 1) return;
+                freeTickets--;
+            }
+
+            let emptyIndices = [];
+            fieldTowers.forEach((t, i) => { if(t === 0) emptyIndices.push(i); });
+            if(emptyIndices.length === 0) {
+                alert("⚔️ 배치 필드가 가득 찼습니다!");
+                return;
+            }
+
+            const r = getGachaRates();
+            const rand = Math.random() * 100;
+            let grade = "C";
+            if (rand < r.SSR) grade = "SSR";
+            else if (rand < r.SSR + r.SR) grade = "SR";
+            else if (rand < r.SSR + r.SR + r.A) grade = "A";
+            else if (rand < r.SSR + r.SR + r.A + r.B) grade = "B";
+
+            const matchedPool = Object.values(elementsData).filter(el => el.grade === grade);
+            const selectedElement = matchedPool[Math.floor(Math.random() * matchedPool.length)];
+            let targetIdx = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+            
+            let baseDmg = 5;
+            if(grade === "B") baseDmg = 14;
+            if(grade === "A") baseDmg = 31;
+            if(grade === "SR") baseDmg = 78;
+            if(grade === "SSR") baseDmg = 250;
+
+            fieldTowers[targetIdx] = {
+                no: selectedElement.no, symbol: selectedElement.symbol, grade: selectedElement.grade, color: selectedElement.color,
+                baseDamage: baseDmg, lastShot: 0, attackCooldown: grade === "SSR" ? 10 : (grade === "SR" ? 14 : 22)
+            };
+            updateUI();
+        }
+
+        function upgradeGacha() {
+            if(userCoins < upgCost) return;
+            userCoins -= upgCost;
+            gachaLevel++;
+            upgCost = gachaLevel * 8;
+            updateUI();
+        }
+
+        function combineFieldTowers() {
+            let gradeBuckets = { C: [], B: [], A: [], SR: [], SSR: [] };
+            fieldTowers.forEach((t, idx) => { if(t !== 0) gradeBuckets[t.grade].push(idx); });
+
+            let combined = false;
+            for(let i=0; i<gradeOrder.length - 1; i++) {
+                let currG = gradeOrder[i]; let nextG = gradeOrder[i+1];
+
+                if(gradeBuckets[currG].length >= 3) {
+                    for(let k=0; k<3; k++) { fieldTowers[gradeBuckets[currG].pop()] = 0; }
+                    let nextPool = Object.values(elementsData).filter(el => el.grade === nextG);
+                    let spawned = nextPool[Math.floor(Math.random() * nextPool.length)];
+                    let emptyIdx = fieldTowers.indexOf(0);
+                    if(emptyIdx !== -1) {
+                        let nextDmg = nextG === "B" ? 14 : (nextG === "A" ? 31 : (nextG === "SR" ? 78 : 250));
+                        fieldTowers[emptyIdx] = {
+                            no: spawned.no, symbol: spawned.symbol, grade: spawned.grade, color: spawned.color,
+                            baseDamage: nextDmg, lastShot: 0, attackCooldown: nextG === "SSR" ? 10 : 18
+                        };
+                    }
+                    alert(`🧪 [원소 융합] 상위 등급 [${spawned.symbol}] 획득!`);
+                    gameScore += 200; combined = true; break;
+                }
+            }
+            if(!combined) alert("동일 등급 타워가 3개 이상 필드에 필요합니다.");
+            updateUI();
+        }
+
+        function handleCanvasClick(e) {
+            if(isGameOver) return;
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            for (let i = 0; i < gridCount; i++) {
+                for (let j = 0; j < gridCount; j++) {
+                    let cellX = offsetX + i * cellSize; let cellY = offsetY + j * cellSize;
+                    if (mouseX >= cellX && mouseX <= cellX + cellSize && mouseY >= cellY && mouseY <= cellY + cellSize) {
+                        let fieldIdx = j * gridCount + i; let clickedTower = fieldTowers[fieldIdx];
+                        if (clickedTower && clickedTower !== 0) {
+                            collectionBuffs[clickedTower.no] += 1;
+                            alert(`📊 주기율표 각인! [${clickedTower.symbol}] 공격력 영구 +50%! (+300점)`);
+                            gameScore += 300; fieldTowers[fieldIdx] = 0;
+                            updateUI(); return;
+                        }
+                    }
+                }
+            }
+        }
+
+        function updateDefenseFrame() {
+            if(isGameOver) return;
+            globalAnimFrame++;
+
+            levelUpTimer++;
+            if(levelUpTimer >= 360) { // 몹 성장 주기를 약간 앞당겨 난이도 상향
+                monsterLevel++; levelUpTimer = 0; updateUI(); 
+            }
+
+            spawnTimer++;
+            if(spawnTimer % 40 === 0) { 
+                let isBossRoll = Math.random() < 0.12; 
+                // [난이도 살짝 조정: 레벨당 체력 계수를 22에서 26으로 상향]
+                let baseHp = 30 + (monsterLevel * 26); 
+                
+                if (isBossRoll) {
+                    monsters.push({
+                        x: path[0].x, y: path[0].y, nodeIdx: 0,
+                        hp: baseHp * 7.5, maxHp: baseHp * 7.5, speed: 1.1,
+                        isBoss: true, radius: 20
+                    });
+                } else {
+                    monsters.push({
+                        x: path[0].x, y: path[0].y, nodeIdx: 0,
+                        hp: baseHp, maxHp: baseHp, speed: 2.2,
+                        isBoss: false, radius: 10
+                    });
+                }
+                updateUI();
+            }
+
+            for(let i = monsters.length - 1; i >= 0; i--) {
+                let m = monsters[i]; let targetNode = path[m.nodeIdx + 1];
+                let dx = targetNode.x - m.x; let dy = targetNode.y - m.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+
+                if(dist <= m.speed) {
+                    m.nodeIdx++;
+                    if(m.nodeIdx >= path.length - 1) { m.nodeIdx = 0; m.x = path[0].x; m.y = path[0].y; }
+                } else {
+                    m.x += (dx / dist) * m.speed; m.y += (dy / dist) * m.speed;
+                }
+            }
+
+            if(monsters.length >= 20) {
+                isGameOver = true; updateUI();
+                setTimeout(() => {
+                    alert(`━━━━━━━━━━━━━━━━━━━━━━━━\n  ☠️ EXPERIMENT OVER (실험 종료) ☠️\n━━━━━━━━━━━━━━━━━━━━━━━━\n\n■ 최종 누적 랭킹 스코어: [ ${gameScore} 점 ]\n■ 최종 버틴 라운드: [ ${monsterLevel} Lv ]\n\n이 화면을 캡처하여 단톡방에 인증하세요!`);
+                }, 100);
+                return;
+            }
+
+            fieldTowers.forEach((t, idx) => {
+                if(t === 0) return;
+                t.lastShot++;
+
+                if(t.lastShot >= t.attackCooldown && monsters.length > 0) {
+                    let gridX = idx % gridCount; let gridY = Math.floor(idx / gridCount);
+                    let tX = offsetX + gridX * cellSize + cellSize/2;
+                    let tY = offsetY + gridY * cellSize + cellSize/2;
+                    let targetMob = monsters[0];
+                    let finalDmg = t.baseDamage * (1 + (collectionBuffs[t.no] * 0.5));
+
+                    let pSize = 3; let pColor = "#f1c40f"; let pSpeed = 9;
+                    if(t.grade === "B") { pSize = 4; pColor = "#3498db"; pSpeed = 11; }
+                    else if(t.grade === "A") { pSize = 5; pColor = "#2ecc71"; pSpeed = 10; }
+                    else if(t.grade === "SR") { pSize = 6; pColor = "#9b59b6"; pSpeed = 12; }
+                    else if(t.grade === "SSR") { pSize = 12; pColor = "#e74c3c"; pSpeed = 7; }
+
+                    projectiles.push({
+                        x: tX, y: tY, target: targetMob, speed: pSpeed, damage: finalDmg,
+                        size: pSize, color: pColor, grade: t.grade
+                    });
+                    t.lastShot = 0;
+                }
+            });
+
+            for(let i = projectiles.length - 1; i >= 0; i--) {
+                let p = projectiles[i];
+                if(!monsters.includes(p.target)) { projectiles.splice(i, 1); continue; }
+
+                let dx = p.target.x - p.x; let dy = p.target.y - p.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+
+                if(dist <= p.speed) {
+                    p.target.hp -= p.damage; projectiles.splice(i, 1);
+
+                    if(p.target.hp <= 0) {
+                        let mIdx = monsters.indexOf(p.target);
+                        if(mIdx !== -1) {
+                            if(p.target.isBoss) {
+                                userCoins += 6; freeTickets += 1; gameScore += 1000;
+                                alert("🦅 둥지 주인 '거대 칼날부리' 제압 성공! 보너스 점수 +1000점!");
+                            } else {
+                                userCoins += 0.5; gameScore += 15;
+                            }
+                            monsters.splice(mIdx, 1); updateUI();
+                        }
+                    }
+                } else {
+                    p.x += (dx / dist) * p.speed; p.y += (dy / dist) * p.speed;
+                }
+            }
+            drawDefenseBoard();
+        }
+
+        // --- 🦅 칼날부리(Raptor) 하이엔드 캔버스 드로잉 엔진 ---
+        function drawRaptor(ctx, x, y, isBoss, r) {
+            ctx.save();
+            if(!isBoss) {
+                ctx.fillStyle = "#a04000";
+                ctx.beginPath(); ctx.moveTo(x - r, y); ctx.lineTo(x - r - 6, y - 4); ctx.lineTo(x - r - 4, y + 4); ctx.fill();
+
+                ctx.fillStyle = "#e67e22";
+                ctx.beginPath(); ctx.ellipse(x - 2, y + 2, r - 3, r - 1, Math.PI/6, 0, Math.PI*2); ctx.fill();
+
+                ctx.fillStyle = "#ca6f1e";
+                ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+
+                ctx.fillStyle = "#f39c12";
+                ctx.beginPath(); ctx.moveTo(x + r - 3, y - 3); ctx.lineTo(x + r + 8, y); ctx.lineTo(x + r - 3, y + 5); ctx.fill();
+
+                ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(x + 2, y - 3, 2.5, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = "#000000"; ctx.beginPath(); ctx.arc(x + 2.5, y - 3, 1.2, 0, Math.PI*2); ctx.fill();
+            } else {
+                let auraRad = r + 4 + Math.sin(globalAnimFrame * 0.4) * 3;
+                let gradient = ctx.createRadialGradient(x, y, r - 5, x, y, auraRad);
+                gradient.addColorStop(0, 'rgba(231, 76, 60, 0.8)');
+                gradient.addColorStop(0.5, 'rgba(211, 84, 0, 0.4)');
+                gradient.addColorStop(1, 'rgba(231, 76, 60, 0)');
+                ctx.fillStyle = gradient;
+                ctx.beginPath(); ctx.arc(x, y, auraRad, 0, Math.PI*2); ctx.fill();
+
+                ctx.fillStyle = "#78281f";
+                ctx.beginPath(); ctx.moveTo(x - r, y); ctx.lineTo(x - r - 12, y - 8); ctx.lineTo(x - r - 8, y + 8); ctx.fill();
+
+                ctx.fillStyle = "#e74c3c";
+                ctx.beginPath(); ctx.ellipse(x - 4, y + 4, r - 5, r - 2, Math.PI/6, 0, Math.PI*2); ctx.fill();
+
+                ctx.fillStyle = "#922b21";
+                ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+
+                ctx.fillStyle = "#dc7633";
+                ctx.beginPath(); ctx.moveTo(x + r - 4, y - 5); ctx.lineTo(x + r + 16, y + 1); ctx.lineTo(x + r - 4, y + 7); ctx.fill();
+
+                ctx.fillStyle = "#f1c40f"; ctx.beginPath(); ctx.arc(x + 4, y - 4, 4, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = "#ff0000"; ctx.beginPath(); ctx.arc(x + 5, y - 4, 2, 0, Math.PI*2); ctx.fill();
+
+                ctx.fillStyle = "#f1c40f";
+                ctx.beginPath(); ctx.moveTo(x - 6, y - r + 3); ctx.lineTo(x - 10, y - r - 8); ctx.lineTo(x, y - r - 2); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(x, y - r - 2); ctx.lineTo(x, y - r - 14); ctx.lineTo(x + 6, y - r - 2); ctx.fill();
+                ctx.beginPath(); ctx.moveTo(x + 6, y - r - 2); ctx.lineTo(x + 12, y - r - 8); ctx.lineTo(x + 8, y - r + 4); ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        function drawDefenseBoard() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = "#2c3e50"; ctx.lineWidth = 24; ctx.lineJoin = "round";
+            ctx.beginPath(); ctx.moveTo(path[0].x, path[0].y);
+            for(let i=1; i<path.length; i++) ctx.lineTo(path[i].x, path[i].y);
+            ctx.stroke();
+
+            ctx.fillStyle = "#1c1e24"; ctx.fillRect(offsetX, offsetY, cellSize*gridCount, cellSize*gridCount);
+            for(let i=0; i<=gridCount; i++) {
+                ctx.strokeStyle = "#2c3e50"; ctx.lineWidth = 1;
+                ctx.beginPath(); ctx.moveTo(offsetX, offsetY + i*cellSize); ctx.lineTo(offsetX + gridCount*cellSize, offsetY + i*cellSize); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(offsetX + i*cellSize, offsetY); ctx.lineTo(offsetX + i*cellSize, offsetY + gridCount*cellSize); ctx.stroke();
+            }
+
+            fieldTowers.forEach((t, idx) => {
+                if(t === 0) return;
+                let gx = idx % gridCount; let gy = Math.floor(idx / gridCount);
+                let cx = offsetX + gx * cellSize; let cy = offsetY + gy * cellSize;
+
+                ctx.fillStyle = t.color; ctx.beginPath();
+                ctx.arc(cx + cellSize/2, cy + cellSize/2, 18, 0, Math.PI*2); ctx.fill();
+
+                ctx.fillStyle = "#1a1c23"; ctx.font = "bold 13px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+                ctx.fillText(t.symbol, cx + cellSize/2, cy + cellSize/2 - 2);
+                ctx.font = "8px Malgun Gothic"; ctx.fillText(`${t.grade}`, cx + cellSize/2, cy + cellSize/2 + 10);
+            });
+
+            monsters.forEach(m => {
+                drawRaptor(ctx, m.x, m.y, m.isBoss, m.radius);
+
+                let barW = m.isBoss ? 44 : 22;
+                ctx.fillStyle = "#555"; ctx.fillRect(m.x - barW/2, m.y - (m.radius + 9), barW, 4);
+                ctx.fillStyle = m.isBoss ? "#f1c40f" : "#2ecc71";
+                ctx.fillRect(m.x - barW/2, m.y - (m.radius + 9), Math.max(0, (m.hp / m.maxHp) * barW), 4);
+            });
+
+            projectiles.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+            });
+        }
+    </script>
+</body>
+</html>
