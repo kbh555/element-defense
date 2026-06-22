@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>원소 디펜스 - 난이도 업 에디션</title>
+    <title>원소 랜덤 타워 디펜스</title>
     <style>
         body {
             font-family: 'Malgun Gothic', sans-serif;
@@ -14,11 +14,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            position: relative;
         }
         h1 { color: #f1c40f; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-        p { color: #95a5a6; margin-top: 0; margin-bottom: 20px; text-align: center; }
+        p { color: #95a5a6; margin-top: 0; margin-bottom: 25px; text-align: center; }
 
-        /* 대시보드 */
         .dashboard {
             background: #2c3e50;
             max-width: 1100px;
@@ -44,19 +44,25 @@
 
         #boss-alert {
             display: none;
-            background: linear-gradient(90deg, #7f1d1d, #d35400, #7f1d1d);
+            position: absolute;
+            top: 75px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(90deg, rgba(127,29,29,0.95), rgba(211,84,0,0.95), rgba(127,29,29,0.95));
             color: white;
-            width: 100%;
+            width: calc(100% - 40px);
             max-width: 1100px;
             text-align: center;
-            padding: 8px;
+            padding: 10px;
             font-weight: bold;
-            border-radius: 6px;
-            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #f1c40f;
+            z-index: 99;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             animation: blink 0.8s infinite;
             box-sizing: border-box;
         }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
 
         .tab-menu {
             display: flex;
@@ -88,6 +94,7 @@
             width: 100%;
             gap: 20px;
             box-sizing: border-box;
+            position: relative;
         }
 
         .left-panel {
@@ -98,6 +105,7 @@
             border-radius: 12px;
             border: 1px solid #2c3e50;
             box-sizing: border-box;
+            position: relative;
         }
 
         .center-panel {
@@ -169,14 +177,37 @@
         }
         .quiz-btn:hover { background: #34495e; border-color: #f1c40f; }
 
-        .gacha-zone { display: flex; flex-direction: column; gap: 15px; align-items: center; }
-        .gacha-ctrls { display: flex; gap: 10px; width: 100%; flex-wrap: wrap; justify-content: center; }
-        .gacha-btn { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; padding: 12px 15px; font-size: 13px; font-weight: bold; border-radius: 20px; cursor: pointer; }
-        .ticket-btn { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; border: none; padding: 12px 15px; font-size: 13px; font-weight: bold; border-radius: 20px; cursor: pointer; }
-        .upg-btn { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; border: none; padding: 12px 12px; font-size: 12px; font-weight: bold; border-radius: 20px; cursor: pointer; }
-        .combine-btn { background: #f39c12; color: #1a1c23; border: none; padding: 12px 15px; font-size: 13px; font-weight: bold; border-radius: 20px; cursor: pointer; }
+        .feedback-popup {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(18, 19, 24, 0.95);
+            border: 2px solid #e74c3c;
+            box-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
+            padding: 20px 30px;
+            border-radius: 12px;
+            text-align: center;
+            z-index: 100;
+            width: 80%;
+            box-sizing: border-box;
+            animation: fadeIn 0.2s ease-out;
+        }
+        .feedback-popup.correct-pop {
+            border-color: #2ecc71;
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.5);
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translate(-50%, -45%); } to { opacity: 1; transform: translate(-50%, -50%); } }
+
+        .gacha-zone { display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%; }
+        .gacha-ctrls { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        .gacha-btn { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; padding: 12px 15px; font-size: 13px; font-weight: bold; border-radius: 20px; cursor: pointer; width: 100%; }
+        .ticket-btn { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; border: none; padding: 12px 15px; font-size: 13px; font-weight: bold; border-radius: 20px; cursor: pointer; width: 100%; }
+        .upg-btn { background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; border: none; padding: 12px 15px; font-size: 13px; font-weight: bold; border-radius: 20px; cursor: pointer; width: 100%; }
+        .combine-btn { background: #f39c12; color: #1a1c23; border: none; padding: 12px 15px; font-size: 13px; font-weight: bold; border-radius: 20px; cursor: pointer; width: 100%; }
         .gacha-btn:disabled, .ticket-btn:disabled, .upg-btn:disabled { background: #7f8c8d !important; cursor: not-allowed; }
-        .chance-info { font-size: 11px; color: #bdc3c7; background: #1a1c23; padding: 8px; border-radius: 6px; width: 100%; text-align: center; }
+        .chance-info { font-size: 11px; color: #bdc3c7; background: #1a1c23; padding: 8px; border-radius: 6px; width: 100%; text-align: center; box-sizing: border-box; }
 
         .periodic-table { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
         .element-cell {
@@ -192,15 +223,13 @@
         .element-cell.acquired.SSR { background-color: #d35400; border-color: #f1c40f; }
         .empty-cell { grid-column: span 6; }
 
-        .ranking-title { font-size: 16px; color: #f1c40f; font-weight: bold; text-align: center; margin-bottom: 15px; border-bottom: 2px solid #f1c40f; padding-bottom: 5px;}
-        .ranking-list { list-style: none; padding: 0; margin: 0; }
-        .ranking-item { display: flex; justify-content: space-between; padding: 8px 10px; border-bottom: 1px solid #2c3e50; font-size: 13px; }
+        .shop-title { font-size: 16px; color: #f1c40f; font-weight: bold; text-align: center; margin-bottom: 15px; border-bottom: 2px solid #f1c40f; padding-bottom: 5px;}
     </style>
 </head>
 <body>
 
-    <h1>🧪 운빨원소존많겜: 하드코어 칼날부리 에디션</h1>
-    <p>💡 난이도 상승! 몹 젠 속도 대폭 상향, 라인 몹 40마리 도달 시 패배!</p>
+    <h1>🧪 원소 랜덤 타워 디펜스</h1>
+    <p>💡 밸런스 패치 완료! SR(3쿠션 도탄) & SSR(독 안개 장판) 특수 공격 리워크!</p>
 
     <div id="boss-alert">🦅 WARNING: 분노한 붉은 깃털의 '거대 황금부리 칼날부리' 보스가 출현했습니다! 🦅</div>
 
@@ -215,7 +244,6 @@
 
     <div class="tab-menu">
         <button class="tab-btn active" id="btn-quiz" onclick="switchTab('quiz')">📝 마스터 퀴즈 (+2코인 / -1코인)</button>
-        <button class="tab-btn" id="btn-gacha" onclick="switchTab('gacha')">🎁 자원 소비: 소환 및 합성 (소환비 4코인)</button>
         <button class="tab-btn" id="btn-table" onclick="switchTab('table')">📊 컬렉션: 주기율표 영구강화 (+50%)</button>
     </div>
 
@@ -235,16 +263,9 @@
                 </div>
             </div>
 
-            <div class="game-panel" id="panel-gacha">
-                <div class="gacha-zone">
-                    <div class="gacha-ctrls">
-                        <button class="gacha-btn" onclick="drawGacha('coin')">코인 소환 (4코인 소모)</button>
-                        <button class="ticket-btn" id="btn-ticket-draw" onclick="drawGacha('ticket')">소환권 사용 (1장)</button>
-                        <button class="upg-btn" id="btn-upgrade" onclick="upgradeGacha()">확률 업 레벨업 (<span id="upg-cost">8</span>코인)</button>
-                        <button class="combine-btn" onclick="combineFieldTowers()">상위 등급 융합 (동일등급 3개 자동합성)</button>
-                    </div>
-                    <div class="chance-info" id="chance-display">확률 로딩 중...</div>
-                </div>
+            <div id="quiz-feedback" class="feedback-popup">
+                <h3 id="feedback-title" style="margin: 0 0 10px 0; font-size: 20px;">틀렸습니다!</h3>
+                <p id="feedback-msg" style="margin: 0; color: #fff; font-size: 15px; font-weight: bold;"></p>
             </div>
 
             <div class="game-panel" id="panel-table">
@@ -265,10 +286,16 @@
         </div>
 
         <div class="right-panel">
-            <div class="ranking-title">🏆 실시간 실력자 랭킹 (TOP 10)</div>
-            <ol class="ranking-list" id="ranking-board">
-                <li class="ranking-item">데이터를 실시간으로 가져오는 중...</li>
-            </ol>
+            <div class="shop-title">🎁 원소 소환 및 합성 상점</div>
+            <div class="gacha-zone">
+                <div class="gacha-ctrls">
+                    <button class="gacha-btn" onclick="drawGacha('coin')">코인 소환 (4코인 소모)</button>
+                    <button class="ticket-btn" id="btn-ticket-draw" onclick="drawGacha('ticket')">소환권 사용 (1장)</button>
+                    <button class="upg-btn" id="btn-upgrade" onclick="upgradeGacha()">확률 업 레벨업 (<span id="upg-cost">8</span>코인)</button>
+                    <button class="combine-btn" onclick="combineFieldTowers()">상위 등급 융합 (동일등급 3개 자동합성)</button>
+                </div>
+                <div class="chance-info" id="chance-display">확률 로딩 중...</div>
+            </div>
         </div>
     </div>
 
@@ -330,7 +357,6 @@
         const elementsData = {}; rawElements.forEach(el => elementsData[el.no] = el);
 
         const masterQuizBank = [
-            // PART 1: 원소 번호 (20문제)
             { cat: "원자 번호", q: "수소(H)의 원자 번호는 몇 번일까요?", os: ["1번", "2번", "3번", "4번"], a: 1 },
             { cat: "원자 번호", q: "비활성 기체인 헬륨(He)의 원자 번호는?", os: ["1번", "2번", "5번", "10번"], a: 2 },
             { cat: "원자 번호", q: "알칼리 금속인 리튬(Li)의 원자 번호는?", os: ["3번", "4번", "11번", "19번"], a: 1 },
@@ -352,7 +378,6 @@
             { cat: "원자 번호", q: "칼륨(K)의 원자 번호는?", os: ["11번", "15번", "19번", "20번"], a: 3 },
             { cat: "원자 번호", q: "칼슘(Ca)의 원자 번호는?", os: ["12번", "19번", "20번", "38번"], a: 3 },
 
-            // PART 2: 원소 기호 (20문제)
             { cat: "원소 기호", q: "수소의 올바른 원소 기호는?", os: ["H", "He", "Li", "N"], a: 1 },
             { cat: "원소 기호", q: "헬륨의 올바른 원소 기호는?", os: ["H", "He", "Be", "Ne"], a: 2 },
             { cat: "원소 기호", q: "리튬의 올바른 원소 기호는?", os: ["Li", "Le", "Rb", "Na"], a: 1 },
@@ -374,7 +399,6 @@
             { cat: "원소 기호", q: "칼륨의 올바른 원소 기호는?", os: ["K", "Ka", "Ca", "Kl"], a: 1 },
             { cat: "원소 기호", q: "칼슘의 올바른 원소 기호는?", os: ["C", "Ca", "Cs", "Cu"], a: 2 },
 
-            // PART 3: 원소 이름 (20문제)
             { cat: "원소 이름", q: "원소 기호 'H'의 한국어 명칭은 무엇일까요?", os: ["헬륨", "수소", "하이드로젠", "탄소"], a: 2 },
             { cat: "원소 이름", q: "원소 기호 'He'의 명칭은?", os: ["수소", "헬륨", "네온", "아르곤"], a: 2 },
             { cat: "원소 이름", q: "원소 기호 'Li'의 명칭은?", os: ["나트륨", "칼륨", "리튬", "베릴륨"], a: 3 },
@@ -385,18 +409,17 @@
             { cat: "원소 이름", q: "원소 기호 'O'의 명칭은?", os: ["산소", "오스뮴", "아연", "인"], a: 1 },
             { cat: "원소 이름", q: "원소 기호 'F'의 명칭은?", os: ["철", "프랑슘", "플루오린", "인"], a: 3 },
             { cat: "원소 이름", q: "원소 기호 'Ne'의 명칭은?", os: ["질소", "나트륨", "네온", "아르곤"], a: 3 },
-            { cat: "원소 이름", q: "원소 기호 'Na'의 명칭은?", os: ["나트륨", "칼륨", "질소", "네온"], a: 1 },
-            { cat: "원소 이름", q: "원소 기호 'Mg'의 명칭은?", os: ["망가니즈", "수은", "마그네슘", "바륨"], a: 3 },
-            { cat: "원소 이름", q: "원소 기호 'Al'의 명칭은?", os: ["은", "알루미늄", "금", "아연"], a: 2 },
+            { cat: "원소 기호", q: "원소 기호 'Na'의 명칭은?", os: ["나트륨", "칼륨", "질소", "네온"], a: 1 },
+            { cat: "원소 기호", q: "원소 기호 'Mg'의 명칭은?", os: ["망가니즈", "수은", "마그네슘", "바륨"], a: 3 },
+            { cat: "원소 기호", q: "원소 기호 'Al'의 명칭은?", os: ["은", "알루미늄", "금", "아연"], a: 2 },
             { cat: "원소 이름", q: "원소 기호 'Si'의 명칭은?", os: ["황", "규소", "셀레늄", "은"], a: 2 },
             { cat: "원소 이름", q: "원소 기호 'P'의 명칭은?", os: ["인", "칼륨", "플루오린", "납"], a: 1 },
             { cat: "원소 이름", q: "원소 기호 'S'의 명칭은?", os: ["나트륨", "황", "규소", "주석"], a: 2 },
-            { cat: "원소 기호", q: "원소 기호 'Cl'의 명칭은?", os: ["탄소", "칼슘", "염소", "크롬"], a: 3 },
-            { cat: "원소 기호", q: "원소 기호 'Ar'의 명칭은?", os: ["아르곤", "비소", "아연", "은"], a: 1 },
-            { cat: "원소 기호", q: "원소 기호 'K'의 명칭은?", os: ["칼슘", "크립톤", "나트륨", "칼륨"], a: 4 },
-            { cat: "원소 기호", q: "원소 기호 'Ca'의 명칭은?", os: ["칼륨", "칼슘", "탄소", "구리"], a: 2 },
+            { cat: "원소 이름", q: "원소 기호 'Cl'의 명칭은?", os: ["탄소", "칼슘", "염소", "크롬"], a: 3 },
+            { cat: "원소 이름", q: "원소 기호 'Ar'의 명칭은?", os: ["아르곤", "비소", "아연", "은"], a: 1 },
+            { cat: "원소 이름", q: "원소 기호 'K'의 명칭은?", os: ["칼슘", "크립톤", "나트륨", "칼륨"], a: 4 },
+            { cat: "원소 이름", q: "원소 기호 'Ca'의 명칭은?", os: ["칼륨", "칼슘", "탄소", "구리"], a: 2 },
 
-            // PART 4: 실생활 및 과학 상식 (20문제)
             { cat: "실생활 상식", q: "우주에서 가장 풍부하며 미래 청정 에너지원으로 꼽히는 원소는?", os: ["산소", "수소", "질소", "헬륨"], a: 2 },
             { cat: "실생활 상식", q: "들이마시면 목소리가 가늘고 변하게 만드는 충전용 비활성 기체는?", os: ["네온", "산소", "헬륨", "수소"], a: 3 },
             { cat: "실생활 상식", q: "스마트폰 배터리에 광범위하게 쓰이는 가장 가벼운 알칼리 금속은?", os: ["나트륨", "리튬", "칼륨", "마그네슘"], a: 2 },
@@ -405,7 +428,7 @@
             { cat: "실생활 상식", q: "인간이 호흡하고 물질이 연소하기 위해 필수적인 기체 원소는?", os: ["산소", "수소", "이산화탄소", "네온"], a: 1 },
             { cat: "실생활 상식", q: "충치 예방을 위해 치약에 흔히 넣는 원소인 '불소'의 정식 화학 명칭은?", os: ["염소", "플루오린", "붕소", "규소"], a: 2 },
             { cat: "실생활 상식", q: "밤거리를 밝히는 화려한 조명판인 '네온사인' 기체의 원자 번호는?", os: ["2번", "10번", "18번", "36번"], a: 2 },
-            { cat: "실생활 상식", q: "우리가 먹는 소금(NaCl)을 구성하는 두 원소는 나트륨과 무엇일까요?", os: ["칼륨", "염소", "황", "마그네슘"], a: 2 },
+            { cat: "실생활 상식", q: "우리가 먹는 소금(NaCl)을 구성하는 두 원소는 나트륨과 무슨일까요?", os: ["칼륨", "염소", "황", "마그네슘"], a: 2 },
             { cat: "실생활 상식", q: "반도체 칩 제조의 핵심 원료로 쓰이며, 모래의 주성분이기도 한 원소는?", os: ["탄소", "규소", "알루미늄", "인"], a: 2 },
             { cat: "실생활 상식", q: "성냥의 마찰면이나 호신용 연막탄에 쓰이는 밤에 빛나는 원소는?", os: ["인", "황", "염소", "칼슘"], a: 1 },
             { cat: "실생활 상식", q: "계란 노른자가 썩을 때 나는 특유의 지독한 냄새는 어떤 원소 때문일까요?", os: ["질소", "인", "황", "염소"], a: 3 },
@@ -423,32 +446,38 @@
         let collectionBuffs = {}; Object.keys(elementsData).forEach(k => collectionBuffs[k] = 0);
         let activeQuizQueue = []; let currentProgressIndex = 0; let currentQuiz = null;
         let fieldTowers = Array(16).fill(0); let monsters = []; let projectiles = []; let explosionParticles = [];
+        let poisonClouds = []; // SSR 독안개 장판 배열 추가
         let canvas, ctx; let spawnTimer = 0; let monsterLevel = 1; let levelUpTimer = 0; let isGameOver = false;
+        let isQuizLocked = false;
 
         const gridCount = 4; const cellSize = 60; const offsetX = 60; const offsetY = 60;
         const path = [{x: 20, y: 20}, {x: 340, y: 20}, {x: 340, y: 340}, {x: 20, y: 340}, {x: 20, y: 40}];
         const gradeOrder = ["C", "B", "A", "SR", "SSR"];
 
+        const upgradeCosts = [8, 16, 32, 64];
+        const gradeDamages = { C: 9, B: 15, A: 29, SR: 55, SSR: 132 };
+
         window.onload = function() {
-            let input = prompt("🔬 원소 하드코어 디펜스에 오신 것을 환영합니다!\n학생의 이름을 입력하세요:");
+            let input = prompt("🔬 원소 랜덤 타워 디펜스에 오신 것을 환영합니다!\n학생의 이름을 입력하세요:");
             if(input && input.trim() !== "") studentName = input.trim();
             document.getElementById("player-name").innerText = studentName;
             canvas = document.getElementById("defense-canvas"); ctx = canvas.getContext("2d");
-            renderPeriodicTable(); initQuizEngine(); nextQuiz(); spawnFreeInitialTower(); updateUI(); loadLiveRankings();
+            renderPeriodicTable(); initQuizEngine(); nextQuiz(); spawnFreeInitialTower(); updateUI();
             canvas.addEventListener("click", handleCanvasClick);
             setInterval(updateDefenseFrame, 1000 / 30);
         };
 
         function spawnFreeInitialTower() {
             let startIdx = Math.floor(Math.random() * 16);
-            fieldTowers[startIdx] = { no: 8, symbol: "O", grade: "C", color: "#7f8c8d", baseDamage: 8, lastShot: 0, attackCooldown: 22 };
+            fieldTowers[startIdx] = { no: 8, symbol: "O", grade: "C", color: "#7f8c8d", baseDamage: gradeDamages.C, lastShot: 0, attackCooldown: 22 };
         }
 
         function restartGame() {
-            isGameOver = false; gameScore = 0; userCoins = 4; freeTickets = 1; gachaLevel = 1; upgCost = 8; monsterLevel = 1; spawnTimer = 0; levelUpTimer = 0;
-            fieldTowers.fill(0); monsters = []; projectiles = []; explosionParticles = [];
+            isGameOver = false; isQuizLocked = false; gameScore = 0; userCoins = 4; freeTickets = 1; gachaLevel = 1; upgCost = 8; monsterLevel = 1; spawnTimer = 0; levelUpTimer = 0;
+            fieldTowers.fill(0); monsters = []; projectiles = []; explosionParticles = []; poisonClouds = [];
             Object.keys(elementsData).forEach(k => collectionBuffs[k] = 0);
             document.getElementById("retry-overlay").style.display = "none";
+            document.getElementById("quiz-feedback").style.display = "none";
             initQuizEngine(); nextQuiz(); spawnFreeInitialTower(); updateUI();
         }
 
@@ -456,7 +485,7 @@
         function shuffleArray(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); let temp = arr[i]; arr[i] = arr[j]; arr[j] = temp; } }
 
         function switchTab(tabName) {
-            ["quiz", "gacha", "table"].forEach(t => {
+            ["quiz", "table"].forEach(t => {
                 document.getElementById(`panel-${t}`).classList.remove("active");
                 document.getElementById(`btn-${t}`).classList.remove("active");
             });
@@ -478,23 +507,47 @@
         }
 
         function getGachaRates() {
-            let rates = { C: 50, B: 30, A: 14, SR: 5, SSR: 1 };
-            if (gachaLevel === 2) rates = { C: 40, B: 33, A: 18, SR: 7, SSR: 2 };
-            if (gachaLevel === 3) rates = { C: 30, B: 35, A: 22, SR: 10, SSR: 3 };
-            return rates;
+            if (gachaLevel === 2) return { C: 40, B: 32, A: 18, SR: 8, SSR: 2 };
+            if (gachaLevel === 3) return { C: 25, B: 35, A: 24, SR: 12, SSR: 4 };
+            if (gachaLevel === 4) return { C: 15, B: 30, A: 30, SR: 18, SSR: 7 };
+            if (gachaLevel >= 5) return { C: 5, B: 20, A: 35, SR: 25, SSR: 15 };
+            return { C: 52, B: 30, A: 14, SR: 3, SSR: 1 };
         }
 
         function updateUI() {
             document.getElementById("score-count").innerText = gameScore; document.getElementById("coin-count").innerText = Math.floor(userCoins);
             document.getElementById("ticket-count").innerText = freeTickets; document.getElementById("mob-count").innerText = monsters.length;
             document.getElementById("monster-level").innerText = monsterLevel; document.getElementById("quiz-progress").innerText = `${currentProgressIndex} / ${activeQuizQueue.length}`;
-            let hasBossOnField = monsters.some(m => m.isBoss); document.getElementById("boss-alert").style.display = hasBossOnField ? "block" : "none";
+            
+            let hasMegaBoss = monsters.some(m => m.isMegaBoss);
+            let hasBoss = monsters.some(m => m.isBoss);
+            const alertBox = document.getElementById("boss-alert");
+            if(hasMegaBoss) {
+                alertBox.style.display = "block";
+                alertBox.style.background = "linear-gradient(90deg, #701a75, #dc2626, #701a75)";
+                alertBox.innerText = `🚨 EMERGENCY: ${monsterLevel}Lv 피의 주기를 맞이하여 '초거대 각성 칼날부리'가 깨어났습니다! 🚨`;
+            } else if(hasBoss) {
+                alertBox.style.display = "block";
+                alertBox.style.background = "linear-gradient(90deg, rgba(127,29,29,0.95), rgba(211,84,0,0.95), rgba(127,29,29,0.95))";
+                alertBox.innerText = `🦅 WARNING: 분노한 붉은 깃털의 '거대 황금부리 칼날부리' 보스가 출현했습니다! 🦅`;
+            } else {
+                alertBox.style.display = "none";
+            }
 
             Object.keys(collectionBuffs).forEach(num => {
                 const stack = collectionBuffs[num]; const label = document.getElementById(`buff-stack-${num}`); if(label) label.innerText = `+${stack * 50}%`;
                 const cell = document.getElementById(`cell-${num}`); if(cell) cell.style.opacity = stack > 0 ? "1" : "0.2";
             });
-            let r = getGachaRates(); document.getElementById("chance-display").innerText = `확률 일람: [C:${r.C}%] [B:${r.B}%] [A:${r.A}%] [SR:${r.SR}%] [SSR:${r.SSR}%]`;
+            let r = getGachaRates(); document.getElementById("chance-display").innerText = `확률 레벨 ${gachaLevel} : [C:${r.C}%] [B:${r.B}%] [A:${r.A}%] [SR:${r.SR}%] [SSR:${r.SSR}%]`;
+            
+            const upgBtn = document.getElementById("btn-upgrade");
+            if(gachaLevel >= 5) {
+                document.getElementById("upg-cost").innerText = "MAX";
+                upgBtn.disabled = true;
+            } else {
+                document.getElementById("upg-cost").innerText = upgradeCosts[gachaLevel - 1];
+                upgBtn.disabled = false;
+            }
         }
 
         function nextQuiz() {
@@ -505,10 +558,38 @@
         }
 
         function checkAnswer(chosen) {
-            if(isGameOver || !currentQuiz) return;
-            if(chosen === currentQuiz.a) { userCoins += 2; gameScore += 100; playSound('correct'); alert("⭕ 정답입니다! (+2 코인 보상 및 +100점 추가!)"); } 
-            else { userCoins = Math.max(0, userCoins - 1); playSound('wrong'); alert("❌ 오답입니다! 페널티 감점 (-1 코인)"); }
-            currentProgressIndex++; updateUI(); nextQuiz();
+            if(isGameOver || !currentQuiz || isQuizLocked) return;
+            isQuizLocked = true;
+
+            const pop = document.getElementById("quiz-feedback");
+            const popTitle = document.getElementById("feedback-title");
+            const popMsg = document.getElementById("feedback-msg");
+            const correctText = currentQuiz.os[currentQuiz.a - 1];
+
+            if(chosen === currentQuiz.a) {
+                userCoins += 2; gameScore += 100; playSound('correct');
+                pop.className = "feedback-popup correct-pop";
+                popTitle.innerText = "⭕ 정답입니다!";
+                popTitle.style.color = "#2ecc71";
+                popMsg.innerText = `(+2 코인 획득 / 스코어 상승!)`;
+            } 
+            else {
+                userCoins = Math.max(0, userCoins - 1); playSound('wrong');
+                pop.className = "feedback-popup";
+                popTitle.innerText = "❌ 오답입니다!";
+                popTitle.style.color = "#e74c3c";
+                popMsg.innerHTML = `정답은 <span style="color:#f1c40f;">[ ${correctText} ]</span> 이었습니다.<br><span style="color:#bdc3c7; font-size:12px;">(자원 페널티: -1 코인)</span>`;
+            }
+
+            pop.style.display = "block";
+
+            setTimeout(() => {
+                pop.style.display = "none";
+                currentProgressIndex++;
+                updateUI();
+                nextQuiz();
+                isQuizLocked = false;
+            }, 1000);
         }
 
         function drawGacha(mode) {
@@ -516,17 +597,27 @@
             let emptyIndices = []; fieldTowers.forEach((t, i) => { if(t === 0) emptyIndices.push(i); }); if(emptyIndices.length === 0) return;
 
             let r = getGachaRates(); let rand = Math.random() * 100; let grade = "C";
-            if (rand < r.SSR) grade = "SSR"; else if (rand < r.SSR + r.SR) grade = "SR"; else if (rand < r.SSR + r.SR + r.A) grade = "A"; else if (rand < r.SSR + r.SR + r.A + r.B) grade = "B";
+            if (rand < r.SSR) grade = "SSR"; 
+            else if (rand < r.SSR + r.SR) grade = "SR"; 
+            else if (rand < r.SSR + r.SR + r.A) grade = "A"; 
+            else if (rand < r.SSR + r.SR + r.A + r.B) grade = "B";
 
             let pool = Object.values(elementsData).filter(el => el.grade === grade); let sel = pool[Math.floor(Math.random() * pool.length)];
             let targetIdx = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
-            let dmgs = { C: 8, B: 14, A: 26, SR: 50, SSR: 120 };
 
-            fieldTowers[targetIdx] = { no: sel.no, symbol: sel.symbol, grade: sel.grade, color: sel.color, baseDamage: dmgs[grade], lastShot: 0, attackCooldown: grade === "SSR" ? 12 : 20 };
+            fieldTowers[targetIdx] = { no: sel.no, symbol: sel.symbol, grade: sel.grade, color: sel.color, baseDamage: gradeDamages[grade], lastShot: 0, attackCooldown: grade === "SSR" ? 14 : 20 };
             updateUI();
         }
 
-        function upgradeGacha() { if(userCoins < upgCost) return; userCoins -= upgCost; gachaLevel++; upgCost = gachaLevel * 8; updateUI(); }
+        function upgradeGacha() { 
+            if(gachaLevel >= 5) return;
+            let currentCost = upgradeCosts[gachaLevel - 1];
+            if(userCoins < currentCost) return; 
+            
+            userCoins -= currentCost; 
+            gachaLevel++; 
+            updateUI(); 
+        }
 
         function combineFieldTowers() {
             let buckets = { C: [], B: [], A: [], SR: [], SSR: [] }; fieldTowers.forEach((t, idx) => { if(t !== 0) buckets[t.grade].push(idx); });
@@ -536,8 +627,7 @@
                     for(let k=0; k<3; k++) fieldTowers[buckets[currG].pop()] = 0;
                     let pool = Object.values(elementsData).filter(el => el.grade === nextG); let spawned = pool[Math.floor(Math.random() * pool.length)];
                     let emptyIdx = fieldTowers.indexOf(0);
-                    let dmgs = { B: 14, A: 26, SR: 50, SSR: 120 };
-                    if(emptyIdx !== -1) fieldTowers[emptyIdx] = { no: spawned.no, symbol: spawned.symbol, grade: spawned.grade, color: spawned.color, baseDamage: dmgs[nextG], lastShot: 0, attackCooldown: nextG === "SSR" ? 12 : 20 };
+                    if(emptyIdx !== -1) fieldTowers[emptyIdx] = { no: spawned.no, symbol: spawned.symbol, grade: spawned.grade, color: spawned.color, baseDamage: gradeDamages[nextG], lastShot: 0, attackCooldown: nextG === "SSR" ? 14 : 20 };
                     gameScore += 200; break;
                 }
             }
@@ -558,7 +648,7 @@
         }
 
         function createExplosion(x, y, color, grade) {
-            let count = grade === "SR" ? 32 : 10;
+            let count = grade === "SR" ? 18 : (grade === "SSR" ? 25 : 8);
             for (let i = 0; i < count; i++) {
                 let angle = Math.random() * Math.PI * 2; let speed = Math.random() * 3 + 1;
                 explosionParticles.push({ x: x, y: y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, radius: Math.random() * 2 + 1, color: color, alpha: 1.0, decay: 0.04 });
@@ -569,50 +659,51 @@
             if(projectile.grade === "B") { mob.slowTimer = 90; }
             mob.hp -= dmg; createExplosion(mob.x, mob.y, projectile.color, projectile.grade); playSound('hit');
 
-            if(projectile.grade === "SR" && !projectile.isSplashChild) {
-                monsters.forEach(m => {
-                    if(m !== mob) {
-                        let dx = m.x - mob.x; let dy = m.y - mob.y;
-                        if(Math.sqrt(dx*dx + dy*dy) <= 55) { damageMonster(m, dmg * 0.75, { color: projectile.color, grade: "SR", isSplashChild: true }); }
-                    }
+            // [SSR 리워크] 타격 지점에 지속 데미지를 주는 독안개 장판 생성
+            if(projectile.grade === "SSR" && !projectile.isSplashChild) {
+                poisonClouds.push({
+                    x: mob.x, y: mob.y, radius: 45, damage: dmg * 0.15, duration: 90, maxDuration: 90, color: projectile.color
                 });
-            }
-
-            if(projectile.grade === "SSR" && projectile.chainCount < 4) {
-                let nextTarget = null; let closestDist = 9999;
-                monsters.forEach(m => {
-                    if(m !== mob && !projectile.hitList.includes(m)) {
-                        let dx = m.x - mob.x; let dy = m.y - mob.y; let dist = Math.sqrt(dx*dx + dy*dy);
-                        if(dist < closestDist && dist < 130) { closestDist = dist; nextTarget = m; }
-                    }
-                });
-                if(nextTarget) {
-                    projectiles.push({
-                        x: mob.x, y: mob.y, target: nextTarget, speed: projectile.speed * 1.1, damage: dmg * 0.9,
-                        size: projectile.size * 0.9, color: projectile.color, grade: "SSR",
-                        chainCount: projectile.chainCount + 1, hitList: [...projectile.hitList, nextTarget], trail: []
-                    });
-                }
             }
 
             if(mob.hp <= 0) {
                 let idx = monsters.indexOf(mob);
-                if(idx !== -1) { gameScore += mob.isBoss ? 1000 : 15; monsters.splice(idx, 1); updateUI(); }
+                if(idx !== -1) { 
+                    gameScore += mob.isMegaBoss ? 5000 : (mob.isBoss ? 1000 : 15); 
+                    if (mob.isMegaBoss) { freeTickets += 3; } else if (mob.isBoss) { freeTickets += 1; }
+                    monsters.splice(idx, 1); 
+                    updateUI(); 
+                }
             }
         }
 
         function updateDefenseFrame() {
             if(isGameOver) return;
             
-            // ⚡ 난이도 상승: 몹들의 레벨업 주기 단축 (240프레임 -> 180프레임)
             levelUpTimer++; if(levelUpTimer >= 180) { monsterLevel++; levelUpTimer = 0; updateUI(); }
 
-            // ⚡ 난이도 상승: 몹 소환 속도 단축 (38프레임당 1마리 -> 28프레임당 1마리)
             if(spawnTimer++ % 28 === 0) {
-                let isBoss = Math.random() < 0.12; let baseHp = 25 + monsterLevel * 18;
+                let isMegaBoss = (monsterLevel % 100 === 0);
+                let isBoss = !isMegaBoss && (Math.random() < 0.12);
+                
+                let baseHp = 10 + Math.pow(monsterLevel, 1.45) * 5.2;
+                let hpValue = baseHp;
+                let speedValue = 2.1; 
+                let radiusValue = 10;
+                
+                if (isMegaBoss) {
+                    hpValue = baseHp * 65; 
+                    speedValue = 0.7;
+                    radiusValue = 25;
+                } else if (isBoss) {
+                    hpValue = baseHp * 6.5; 
+                    speedValue = 1.1;
+                    radiusValue = 18;
+                }
+
                 monsters.push({
-                    x: path[0].x, y: path[0].y, nodeIdx: 0, hp: isBoss ? baseHp*5 : baseHp, maxHp: isBoss ? baseHp*5 : baseHp,
-                    baseSpeed: isBoss ? 1.2 : 2.5, slowTimer: 0, isBoss: isBoss, radius: isBoss ? 18 : 10, dirX: 1, dirY: 0
+                    x: path[0].x, y: path[0].y, nodeIdx: 0, hp: hpValue, maxHp: hpValue,
+                    baseSpeed: speedValue, slowTimer: 0, isBoss: isBoss, isMegaBoss: isMegaBoss, radius: radiusValue, dirX: 1, dirY: 0
                 });
                 updateUI();
             }
@@ -630,7 +721,33 @@
                 } else { m.x += m.dirX * currentSpeed; m.y += m.dirY * currentSpeed; }
             }
 
-            // ☠️ 패배 조건: 라인 잔여 몹 20마리 -> 40마리 초과 시 종료로 변경
+            // [SSR 리워크] 독안개 장판 업데이트 및 범위 내 몬스터 주기적 데미지 처리
+            for(let i = poisonClouds.length - 1; i >= 0; i--) {
+                let cloud = poisonClouds[i];
+                cloud.duration--;
+                
+                // 5프레임마다 장판 위의 몬스터들에게 데미지 전달
+                if(cloud.duration % 5 === 0) {
+                    monsters.forEach(m => {
+                        let dx = m.x - cloud.x;
+                        let dy = m.y - cloud.y;
+                        if(Math.sqrt(dx*dx + dy*dy) <= cloud.radius) {
+                            m.hp -= cloud.damage;
+                            if(m.hp <= 0) {
+                                let idx = monsters.indexOf(m);
+                                if(idx !== -1) {
+                                    gameScore += m.isMegaBoss ? 5000 : (m.isBoss ? 1000 : 15);
+                                    if (m.isMegaBoss) { freeTickets += 3; } else if (m.isBoss) { freeTickets += 1; }
+                                    monsters.splice(idx, 1);
+                                    updateUI();
+                                }
+                            }
+                        }
+                    });
+                }
+                if(cloud.duration <= 0) poisonClouds.splice(i, 1);
+            }
+
             if(monsters.length >= 40) {
                 isGameOver = true; updateUI();
                 document.getElementById("final-score-txt").innerText = `연구원: ${studentName}\n최종 스코어 점수: ${gameScore} 점`;
@@ -650,9 +767,13 @@
                         targets.forEach(tgt => { projectiles.push({ x: tX, y: tY, target: tgt, speed: 9, damage: fDmg, size: pSizes.A, color: t.color, grade: "A", trail: [] }); });
                         playSound('shoot');
                     }
-                    else if(t.grade === "SSR") {
+                    else if(t.grade === "SR") {
+                        // [SR 리워크] 3쿠션 도탄 탄환 최초 발사 (첫 대상 타겟 지정 및 바운스 카운트 3 설정)
                         let tgt = monsters[0];
-                        projectiles.push({ x: tX, y: tY, target: tgt, speed: 9, damage: fDmg, size: pSizes.SSR, color: t.color, grade: "SSR", chainCount: 1, hitList: [tgt], trail: [] });
+                        projectiles.push({ 
+                            x: tX, y: tY, target: tgt, speed: 9, damage: fDmg, size: pSizes.SR, color: t.color, 
+                            grade: "SR", bounceCount: 3, hitList: [tgt], trail: [] 
+                        });
                         playSound('shoot');
                     }
                     else {
@@ -665,11 +786,44 @@
             });
 
             for(let i = projectiles.length - 1; i >= 0; i--) {
-                let p = projectiles[i]; if(!monsters.includes(p.target)) { projectiles.splice(i, 1); continue; }
+                let p = projectiles[i]; 
+                if(!monsters.includes(p.target)) { projectiles.splice(i, 1); continue; }
                 let dx = p.target.x - p.x; let dy = p.target.y - p.y; let dist = Math.sqrt(dx*dx + dy*dy);
                 p.trail.push({x: p.x, y: p.y}); if(p.trail.length > 5) p.trail.shift();
 
-                if(dist <= p.speed) { damageMonster(p.target, p.damage, p); projectiles.splice(i, 1); } 
+                if(dist <= p.speed) { 
+                    // [SR 리워크] 도탄 로직 처리
+                    if(p.grade === "SR" && p.bounceCount > 1) {
+                        let nextTarget = null;
+                        let closestDist = 9999;
+                        monsters.forEach(m => {
+                            if(!p.hitList.includes(m)) {
+                                let mdx = m.x - p.x;
+                                let mdy = m.y - p.y;
+                                let mdist = Math.sqrt(mdx*mdx + mdy*mdy);
+                                if(mdist < closestDist) {
+                                    closestDist = mdist;
+                                    nextTarget = m;
+                                }
+                            }
+                        });
+                        
+                        // 다음 도탄 대상이 있다면 투사체를 소멸시키지 않고 경로 변경 유도
+                        if(nextTarget) {
+                            p.bounceCount--;
+                            p.target = nextTarget;
+                            p.hitList.push(nextTarget);
+                            p.hp -= p.damage; // 기존 대상 데미지 가공
+                            damageMonster(p.target, p.damage, { grade: "C", color: p.color }); // 타격 처리만
+                        } else {
+                            damageMonster(p.target, p.damage, p);
+                            projectiles.splice(i, 1);
+                        }
+                    } else {
+                        damageMonster(p.target, p.damage, p);
+                        projectiles.splice(i, 1);
+                    }
+                } 
                 else { p.x += (dx / dist) * p.speed; p.y += (dy / dist) * p.speed; }
             }
 
@@ -684,6 +838,22 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.strokeStyle = "#2c3e50"; ctx.lineWidth = 24; ctx.lineJoin = "round"; ctx.beginPath(); ctx.moveTo(path[0].x, path[0].y);
             for(let i=1; i<path.length; i++) ctx.lineTo(path[i].x, path[i].y); ctx.stroke();
+
+            // [SSR 리워크] 바닥에 독안개 장판(지속 데미지 범위) 렌더링
+            poisonClouds.forEach(cloud => {
+                ctx.save();
+                let ratio = cloud.duration / cloud.maxDuration;
+                ctx.globalAlpha = ratio * 0.25;
+                ctx.fillStyle = cloud.color;
+                ctx.beginPath();
+                ctx.arc(cloud.x, cloud.y, cloud.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = cloud.color;
+                ctx.lineWidth = 1.5;
+                ctx.globalAlpha = ratio * 0.5;
+                ctx.stroke();
+                ctx.restore();
+            });
 
             ctx.fillStyle = "#1c1e24"; ctx.fillRect(offsetX, offsetY, cellSize*gridCount, cellSize*gridCount);
             for(let i=0; i<=gridCount; i++) {
@@ -701,7 +871,6 @@
                 ctx.font = "8px Malgun Gothic"; ctx.fillText(`${t.grade}`, cx + cellSize/2, cy + cellSize/2 + 10);
             });
 
-            // 👾 몬스터 렌더링 파트: 원형을 버리고 완벽한 '칼날부리' 기하학적 종족 디자인 구현!
             monsters.forEach(m => {
                 if(m.slowTimer > 0) {
                     ctx.save(); ctx.strokeStyle = "rgba(41, 128, 185, 0.8)"; ctx.lineWidth = 3;
@@ -709,54 +878,45 @@
                 }
 
                 ctx.save();
-                // 이동 방향을 보고 부리가 앞을 향하도록 회전축 세팅
                 ctx.translate(m.x, m.y);
                 let angle = Math.atan2(m.dirY, m.dirX);
                 ctx.rotate(angle);
 
-                if(m.isBoss) {
-                    // 거대 보스 칼날부리 디자인
-                    ctx.fillStyle = "#a93226"; // 짙은 붉은 깃털 몸통
+                if(m.isMegaBoss) {
+                    ctx.fillStyle = "#4a044e";
                     ctx.beginPath(); ctx.arc(0, 0, m.radius, 0, Math.PI * 2); ctx.fill();
-
-                    // 보스 머리 볏 장식
+                    ctx.fillStyle = "#1e1b4b";
+                    ctx.beginPath(); ctx.moveTo(-m.radius+4, -10); ctx.lineTo(-m.radius-15, -25); ctx.lineTo(-m.radius+15, -15); ctx.fill();
+                    ctx.fillStyle = "#f59e0b";
+                    ctx.beginPath(); ctx.moveTo(m.radius - 5, -12); ctx.lineTo(m.radius + 28, 0); ctx.lineTo(m.radius - 5, 12); ctx.closePath(); ctx.fill();
+                    ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(5, -7, 6, 0, Math.PI*2); ctx.fill();
+                    ctx.fillStyle = "#dc2626"; ctx.beginPath(); ctx.arc(7, -7, 3, 0, Math.PI*2); ctx.fill();
+                } else if(m.isBoss) {
+                    ctx.fillStyle = "#a93226";
+                    ctx.beginPath(); ctx.arc(0, 0, m.radius, 0, Math.PI * 2); ctx.fill();
                     ctx.fillStyle = "#641e16";
                     ctx.beginPath(); ctx.moveTo(-m.radius+4, -6); ctx.lineTo(-m.radius-10, -18); ctx.lineTo(-m.radius+10, -10); ctx.fill();
-
-                    // 거대 황금 칼날 부리
                     ctx.fillStyle = "#f1c40f";
                     ctx.beginPath(); ctx.moveTo(m.radius - 4, -8); ctx.lineTo(m.radius + 18, 0); ctx.lineTo(m.radius - 4, 8); ctx.closePath(); ctx.fill();
-
-                    // 날카로운 눈 화이트 & 블랙
                     ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(4, -5, 4, 0, Math.PI*2); ctx.fill();
                     ctx.fillStyle = "#000000"; ctx.beginPath(); ctx.arc(6, -5, 2.2, 0, Math.PI*2); ctx.fill();
                 } else {
-                    // 일반 칼날부리 디자인
-                    ctx.fillStyle = "#e67e22"; // 칼날부리 특유의 주황색 몸통
+                    ctx.fillStyle = "#e67e22";
                     ctx.beginPath(); ctx.arc(0, 0, m.radius, 0, Math.PI * 2); ctx.fill();
-
-                    // 뒤쪽 꼬리 깃털 표현
                     ctx.fillStyle = "#d35400";
                     ctx.beginPath(); ctx.moveTo(-m.radius, -4); ctx.lineTo(-m.radius - 6, -10); ctx.lineTo(-m.radius + 2, -6); ctx.fill();
                     ctx.beginPath(); ctx.moveTo(-m.radius, 4); ctx.lineTo(-m.radius - 6, 10); ctx.lineTo(-m.radius + 2, 6); ctx.fill();
-
-                    // 날카로운 부리 (삼각형)
                     ctx.fillStyle = "#f39c12";
                     ctx.beginPath(); ctx.moveTo(m.radius - 2, -5); ctx.lineTo(m.radius + 10, 0); ctx.lineTo(m.radius - 2, 5); ctx.closePath(); ctx.fill();
-
-                    // 부리 구분선
                     ctx.strokeStyle = "#d35400"; ctx.lineWidth = 1;
                     ctx.beginPath(); ctx.moveTo(m.radius - 2, 0); ctx.lineTo(m.radius + 7, 0); ctx.stroke();
-
-                    // 성난 눈매
                     ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.arc(2, -3, 2.5, 0, Math.PI*2); ctx.fill();
                     ctx.fillStyle = "#000000"; ctx.beginPath(); ctx.arc(3, -3, 1.2, 0, Math.PI*2); ctx.fill();
                 }
                 ctx.restore();
 
-                // 체력 바 인터페이스
-                let barW = m.isBoss ? 46 : 22; ctx.fillStyle = "#555"; ctx.fillRect(m.x - barW/2, m.y - (m.radius + 9), barW, 4);
-                ctx.fillStyle = m.isBoss ? "#f1c40f" : "#2ecc71"; ctx.fillRect(m.x - barW/2, m.y - (m.radius + 9), Math.max(0, (m.hp / m.maxHp) * barW), 4);
+                let barW = m.isMegaBoss ? 60 : (m.isBoss ? 46 : 22); ctx.fillStyle = "#555"; ctx.fillRect(m.x - barW/2, m.y - (m.radius + 9), barW, 4);
+                ctx.fillStyle = m.isMegaBoss ? "#df00ff" : (m.isBoss ? "#f1c40f" : "#2ecc71"); ctx.fillRect(m.x - barW/2, m.y - (m.radius + 9), Math.max(0, (m.hp / m.maxHp) * barW), 4);
             });
 
             projectiles.forEach(p => {
@@ -772,8 +932,6 @@
                 ctx.save(); ctx.globalAlpha = ep.alpha; ctx.fillStyle = ep.color; ctx.beginPath(); ctx.arc(ep.x, ep.y, ep.radius, 0, Math.PI*2); ctx.fill(); ctx.restore();
             });
         }
-
-        function loadLiveRankings() { document.getElementById("ranking-board").innerHTML = "<li class='ranking-item'>학교 인트라넷 실시간 연동 완료</li>"; }
     </script>
 </body>
 </html>
