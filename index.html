@@ -224,6 +224,12 @@
         .empty-cell { grid-column: span 6; }
 
         .shop-title { font-size: 16px; color: #f1c40f; font-weight: bold; text-align: center; margin-bottom: 15px; border-bottom: 2px solid #f1c40f; padding-bottom: 5px;}
+
+        /* 🏆 실시간 랭킹판 스타일 디자인 정의 */
+        .ranking-box { margin-top: 15px; background: #1a1c23; border: 1px solid #34495e; padding: 10px; border-radius: 8px; }
+        .ranking-list { list-style: none; padding: 0; margin: 0; text-align: left; max-height: 140px; overflow-y: auto;}
+        .ranking-item { display: flex; justify-content: space-between; padding: 6px 8px; font-size: 12px; border-bottom: 1px solid #2c3e50; }
+        .rank-top1 { color: #f1c40f; font-weight: bold; background: rgba(241,196,15,0.1); }
     </style>
 </head>
 <body>
@@ -280,7 +286,7 @@
             
             <div id="retry-overlay">
                 <h2 style="color:#e74c3c; margin-bottom:10px; font-size:24px; text-shadow:0 2px 4px #000;">실험 실패! (라인 몹 40마리 초과)</h2>
-                <p id="final-score-txt" style="color:#fff; margin-bottom:20px; font-size:14px;"></p>
+                <p id="final-score-txt" style="color:#fff; margin-bottom:20px; font-size:14px; white-space: pre-wrap;"></p>
                 <button class="retry-btn" onclick="restartGame()">🔄 실시간 다시 도전하기</button>
             </div>
         </div>
@@ -295,9 +301,77 @@
                     <button class="combine-btn" onclick="combineFieldTowers()">상위 등급 융합 (동일등급 3개 자동합성)</button>
                 </div>
                 <div class="chance-info" id="chance-display">확률 로딩 중...</div>
+                
+                <div class="gacha-ctrls ranking-box" style="width:100%; box-sizing:border-box;">
+                    <div style="font-size:13px; color:#f1c40f; text-align:center; font-weight:bold; margin-bottom:6px;">🏆 전교 실시간 랭킹 (Top 20)</div>
+                    <ul class="ranking-list" id="global-ranking-list">
+                        <li style="text-align:center; color:#7f8c8d; padding:10px; font-size:11px;">랭킹 로딩 중...</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // 보내주신 회원님의 고유 파이어베이스 설정값 주입
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEtiEe3cseOsWREWjp8ks-YodFYRvJDg4",
+            authDomain: "element-2a593.firebaseapp.com",
+            databaseURL: "https://element-2a593-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "element-2a593",
+            storageBucket: "element-2a593.firebasestorage.app",
+            messagingSenderId: "363568072603",
+            appId: "1:363568072603:web:366e5edd724c2aa423c33e",
+            measurementId: "G-H0R9CBTSYG"
+        };
+
+        // 파이어베이스 모듈 초기화
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const rankingRef = ref(database, 'rankings');
+
+        // 전역 스코프 함수로 등록하여 레거시 함수 내부에서 가로챌 수 있게 연동
+        window.sendScoreToFirebase = function(name, score) {
+            push(rankingRef, {
+                name: name,
+                score: parseInt(score),
+                timestamp: Date.now()
+            }).then(() => {
+                console.log("Firebase 스코어 업로드 완료!");
+            }).catch((err) => {
+                console.error("Firebase 전송 실패: ", err);
+            });
+        };
+
+        // 실시간으로 점수 고득점 정렬 리스너 (상위 20명)
+        const rankingQuery = query(rankingRef, orderByChild('score'), limitToLast(20));
+        onValue(rankingQuery, (snapshot) => {
+            const listEl = document.getElementById("global-ranking-list");
+            listEl.innerHTML = "";
+            let arr = [];
+            snapshot.forEach((child) => {
+                arr.push(child.val());
+            });
+            // 높은 점수가 위로 오게 뒤집기
+            arr.reverse();
+
+            if(arr.length === 0) {
+                listEl.innerHTML = `<li style="text-align:center; color:#7f8c8d; font-size:11px; padding:10px;">등록된 기록이 없습니다.</li>`;
+                return;
+            }
+
+            arr.forEach((player, index) => {
+                const li = document.createElement("li");
+                li.className = "ranking-item";
+                if(index === 0) li.className += " rank-top1";
+                li.innerHTML = `<span>${index + 1}위. ${player.name}</span><span>${player.score}점</span>`;
+                listEl.appendChild(li);
+            });
+        });
+    </script>
 
     <script>
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -430,7 +504,7 @@
             { cat: "실생활 상식", q: "밤거리를 밝히는 화려한 조명판인 '네온사인' 기체의 원자 번호는?", os: ["2번", "10번", "18번", "36번"], a: 2 },
             { cat: "실생활 상식", q: "우리가 먹는 소금(NaCl)을 구성하는 두 원소는 나트륨과 무슨일까요?", os: ["칼륨", "염소", "황", "마그네슘"], a: 2 },
             { cat: "실생활 상식", q: "반도체 칩 제조의 핵심 원료로 쓰이며, 모래의 주성분이기도 한 원소는?", os: ["탄소", "규소", "알루미늄", "인"], a: 2 },
-            { cat: "실생활 상식", q: "성냥의 마찰면이나 호신용 연막탄에 쓰이는 밤에 빛나는 원소는?", os: ["인", "황", "염소", "칼슘"], a: 1 },
+            { cat: "실생활 상식", q: "인간의 뼈나 성냥의 마찰면, 연막탄에 쓰이는 밤에 빛나는 원소는?", os: ["인", "황", "염소", "칼슘"], a: 1 },
             { cat: "실생활 상식", q: "계란 노른자가 썩을 때 나는 특유의 지독한 냄새는 어떤 원소 때문일까요?", os: ["질소", "인", "황", "염소"], a: 3 },
             { cat: "실생활 상식", q: "수영장 물을 소독하거나 수돗물 정제 시 특유의 소독내를 풍기는 원소는?", os: ["플루오린", "염소", "산소", "브롬"], a: 2 },
             { cat: "실생활 상식", q: "대기 중에 질소, 산소 다음으로 세 번째로 많은 전구 충전용 비활성 기체는?", os: ["헬륨", "네온", "아르곤", "크립톤"], a: 3 },
@@ -446,7 +520,7 @@
         let collectionBuffs = {}; Object.keys(elementsData).forEach(k => collectionBuffs[k] = 0);
         let activeQuizQueue = []; let currentProgressIndex = 0; let currentQuiz = null;
         let fieldTowers = Array(16).fill(0); let monsters = []; let projectiles = []; let explosionParticles = [];
-        let poisonClouds = []; // SSR 독안개 장판 배열 추가
+        let poisonClouds = []; 
         let canvas, ctx; let spawnTimer = 0; let monsterLevel = 1; let levelUpTimer = 0; let isGameOver = false;
         let isQuizLocked = false;
 
@@ -659,7 +733,6 @@
             if(projectile.grade === "B") { mob.slowTimer = 90; }
             mob.hp -= dmg; createExplosion(mob.x, mob.y, projectile.color, projectile.grade); playSound('hit');
 
-            // [SSR 리워크] 타격 지점에 지속 데미지를 주는 독안개 장판 생성
             if(projectile.grade === "SSR" && !projectile.isSplashChild) {
                 poisonClouds.push({
                     x: mob.x, y: mob.y, radius: 45, damage: dmg * 0.15, duration: 90, maxDuration: 90, color: projectile.color
@@ -721,12 +794,10 @@
                 } else { m.x += m.dirX * currentSpeed; m.y += m.dirY * currentSpeed; }
             }
 
-            // [SSR 리워크] 독안개 장판 업데이트 및 범위 내 몬스터 주기적 데미지 처리
             for(let i = poisonClouds.length - 1; i >= 0; i--) {
                 let cloud = poisonClouds[i];
                 cloud.duration--;
                 
-                // 5프레임마다 장판 위의 몬스터들에게 데미지 전달
                 if(cloud.duration % 5 === 0) {
                     monsters.forEach(m => {
                         let dx = m.x - cloud.x;
@@ -748,10 +819,17 @@
                 if(cloud.duration <= 0) poisonClouds.splice(i, 1);
             }
 
+            // ☠️ 실시간 게임 오버 감지 구역
             if(monsters.length >= 40) {
                 isGameOver = true; updateUI();
                 document.getElementById("final-score-txt").innerText = `연구원: ${studentName}\n최종 스코어 점수: ${gameScore} 점`;
-                document.getElementById("retry-overlay").style.display = "flex"; return;
+                document.getElementById("retry-overlay").style.display = "flex"; 
+                
+                // 🚀 결합 포인트: 게임 오버 시 파이어베이스 전송 함수 호출
+                if (window.sendScoreToFirebase) {
+                    window.sendScoreToFirebase(studentName, gameScore);
+                }
+                return;
             }
 
             fieldTowers.forEach((t, idx) => {
@@ -768,7 +846,6 @@
                         playSound('shoot');
                     }
                     else if(t.grade === "SR") {
-                        // [SR 리워크] 3쿠션 도탄 탄환 최초 발사 (첫 대상 타겟 지정 및 바운스 카운트 3 설정)
                         let tgt = monsters[0];
                         projectiles.push({ 
                             x: tX, y: tY, target: tgt, speed: 9, damage: fDmg, size: pSizes.SR, color: t.color, 
@@ -792,7 +869,6 @@
                 p.trail.push({x: p.x, y: p.y}); if(p.trail.length > 5) p.trail.shift();
 
                 if(dist <= p.speed) { 
-                    // [SR 리워크] 도탄 로직 처리
                     if(p.grade === "SR" && p.bounceCount > 1) {
                         let nextTarget = null;
                         let closestDist = 9999;
@@ -808,13 +884,12 @@
                             }
                         });
                         
-                        // 다음 도탄 대상이 있다면 투사체를 소멸시키지 않고 경로 변경 유도
                         if(nextTarget) {
                             p.bounceCount--;
                             p.target = nextTarget;
                             p.hitList.push(nextTarget);
-                            p.hp -= p.damage; // 기존 대상 데미지 가공
-                            damageMonster(p.target, p.damage, { grade: "C", color: p.color }); // 타격 처리만
+                            p.hp -= p.damage; 
+                            damageMonster(p.target, p.damage, { grade: "C", color: p.color }); 
                         } else {
                             damageMonster(p.target, p.damage, p);
                             projectiles.splice(i, 1);
@@ -839,7 +914,6 @@
             ctx.strokeStyle = "#2c3e50"; ctx.lineWidth = 24; ctx.lineJoin = "round"; ctx.beginPath(); ctx.moveTo(path[0].x, path[0].y);
             for(let i=1; i<path.length; i++) ctx.lineTo(path[i].x, path[i].y); ctx.stroke();
 
-            // [SSR 리워크] 바닥에 독안개 장판(지속 데미지 범위) 렌더링
             poisonClouds.forEach(cloud => {
                 ctx.save();
                 let ratio = cloud.duration / cloud.maxDuration;
