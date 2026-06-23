@@ -316,7 +316,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, push, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-       // 파이어베이스 최종 연동 설정 (미국/싱가포르 혼합 환경 완벽 대응)
+        // 회원님의 진짜 싱가포르 데이터베이스 설정
         const firebaseConfig = {
             apiKey: "AIzaSyDEtiEe3cseOsWREWjp8ks-YodFYRvJDg4",
             authDomain: "element-2a593.firebaseapp.com",
@@ -327,17 +327,12 @@
             appId: "1:363568072603:web:366e5edd724c2aa423c33e",
             measurementId: "G-H0R9CBTSYG"
         };
-        firebase.initializeApp(firebaseConfig);
-        
-        // 브라우저에게 데이터베이스 실물 서버 위치를 강제로 지정해주는 핵심 명령어 ⭐
-        const database = firebase.app().database("https://element-2a593-default-rtdb.asia-southeast1.firebasedatabase.app");
 
-        // 파이어베이스 모듈 초기화
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
         const rankingRef = ref(database, 'rankings');
 
-        // 전역 스코프 함수로 등록하여 레거시 함수 내부에서 가로챌 수 있게 연동
+        // 스코어 전송 함수
         window.sendScoreToFirebase = function(name, score) {
             push(rankingRef, {
                 name: name,
@@ -350,7 +345,7 @@
             });
         };
 
-        // 실시간으로 점수 고득점 정렬 리스너 (상위 20명)
+        // 실시간 랭킹 불러오기 (Top 20)
         const rankingQuery = query(rankingRef, orderByChild('score'), limitToLast(20));
         onValue(rankingQuery, (snapshot) => {
             const listEl = document.getElementById("global-ranking-list");
@@ -359,7 +354,6 @@
             snapshot.forEach((child) => {
                 arr.push(child.val());
             });
-            // 높은 점수가 위로 오게 뒤집기
             arr.reverse();
 
             if(arr.length === 0) {
@@ -377,57 +371,37 @@
         });
     </script>
 
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-<script>
-    // 2. 파이어베이스 서버 연결 설정 (회원님의 진짜 데이터)
-    const firebaseConfig = {
-        apiKey: "AIzaSyDEtiEe3cseOsWREWjp8ks-YodFYRvJDg4",
-        authDomain: "element-2a593.firebaseapp.com",
-        databaseURL: "https://element-2a593-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "element-2a593",
-        storageBucket: "element-2a593.firebasestorage.app",
-        messagingSenderId: "363568072603",
-        appId: "1:363568072603:web:366e5edd724c2aa423c33e",
-        measurementId: "G-H0R9CBTSYG"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.app().database("https://element-2a593-default-rtdb.asia-southeast1.firebasedatabase.app");
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
 
-    // ==========================================
-    // 3. 여기서부터 기존 게임 코드(사운드 등)가 자연스럽게 이어집니다!
-    // ==========================================
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
-    function playSound(type) {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain); gain.connect(audioCtx.destination);
-
-        if (type === 'correct') {
-            osc.type = 'sine'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
-            osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); 
-            osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); 
-            gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.4);
-        } else if (type === 'wrong') {
-            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(120, audioCtx.currentTime);
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-        } else if (type === 'shoot') {
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.08);
-            gain.gain.setValueAtTime(0.04, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.08);
-        } else if (type === 'hit') {
-            osc.type = 'sine'; osc.frequency.setValueAtTime(450, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(90, audioCtx.currentTime + 0.1);
-            gain.gain.setValueAtTime(0.12, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            if (type === 'correct') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); 
+                osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); 
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'shoot') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.04, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+            } else if (type === 'hit') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(450, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(90, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+            }
         }
-    }
 </script>
         const rawElements = [
             { no: 1, symbol: "H", name: "수소", grade: "A", color: "#2ecc71" },
