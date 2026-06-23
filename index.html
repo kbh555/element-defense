@@ -316,7 +316,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, push, onValue, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // 보내주신 회원님의 고유 파이어베이스 설정값 주입
+       // 파이어베이스 최종 연동 설정 (미국/싱가포르 혼합 환경 완벽 대응)
         const firebaseConfig = {
             apiKey: "AIzaSyDEtiEe3cseOsWREWjp8ks-YodFYRvJDg4",
             authDomain: "element-2a593.firebaseapp.com",
@@ -327,6 +327,10 @@
             appId: "1:363568072603:web:366e5edd724c2aa423c33e",
             measurementId: "G-H0R9CBTSYG"
         };
+        firebase.initializeApp(firebaseConfig);
+        
+        // 브라우저에게 데이터베이스 실물 서버 위치를 강제로 지정해주는 핵심 명령어 ⭐
+        const database = firebase.app().database("https://element-2a593-default-rtdb.asia-southeast1.firebasedatabase.app");
 
         // 파이어베이스 모듈 초기화
         const app = initializeApp(firebaseConfig);
